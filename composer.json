@@ -1,5 +1,9 @@
 {
     "name": "fizzday/fizzhelper",
+    "description": "the useful helpers for php that widely used",
+    "keywords": ["helper", "php", "widely used"],
+    "license": "MIT",
+    "type": "function",
     "authors": [
         {
             "name": "fizz",
