@@ -49,7 +49,7 @@ if (!function_exists('returnFalse')) {
      * @param array $data
      * @return array
      */
-    function returnTrue($data = [])
+    function returnFalse($data = [])
     {
         $data['status'] = 0;
         $data['data'] = $data;
