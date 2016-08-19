@@ -13,8 +13,8 @@
     "require": {},
     "autoload": {
         "psr-4": {
-            "Fizzday\\FizzHelper\\": ""
+            "Fizzday\\FizzHelper\\": "src/"
         },
-        "files": ["FizzHelper.php"]
+        "files": ["src/FizzHelper.php"]
     }
 }
