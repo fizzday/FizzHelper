@@ -1,4 +1,11 @@
 <?php
+/**
+ * 常用函数结合
+ * @v($data) 格式化打印, 不终止
+ * @d($data) 格式化打印, 并终止
+ * @returnTrue($data = []) 类的方法返回数据(成功返回)
+ * @returnTrue($data = []) 类的方法返回数据(失败返回)
+ */
 
 if (!function_exists('v')) {
     /**
@@ -36,8 +43,8 @@ if (!function_exists('returnTrue')) {
     function returnTrue($data = [])
     {
         $data['status'] = 1;
-        $data['data'] = $data;
-        $data['msg'] = 'success';
+        $data['data']   = $data;
+        $data['msg']    = 'success';
 
         return $data;
     }
@@ -52,8 +59,8 @@ if (!function_exists('returnFalse')) {
     function returnFalse($data = [])
     {
         $data['status'] = 0;
-        $data['data'] = $data;
-        $data['msg'] = 'fail';
+        $data['data']   = $data;
+        $data['msg']    = 'fail';
 
         return $data;
     }
