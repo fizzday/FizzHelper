@@ -3,7 +3,6 @@
     "description": "the useful helpers for php that widely used",
     "keywords": ["helper", "php", "widely used"],
     "license": "MIT",
-    "version": "1.0",
     "type": "function",
     "authors": [
         {
