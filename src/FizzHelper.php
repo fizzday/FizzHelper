@@ -5,11 +5,13 @@
  * @apireturn($data = '', $status = "0000", $arr = '') api 返回json
  * @d($data) 格式化打印, 并终止
  * @error($text = "", $url = '', $time = 2) 跳转加提示 -- 错误跳转
+ * @file_set($file, $data, $mode = 'a') 指针写入文件
  * @getCode($len = 10, $conf = ['number', 'letter']) 获取随机字符串 (默认随机字母或数字, 如果 $letter 和 $num 都为 true, 则是字母开头)
  * @getTextareaRealStr($textareaStr = "") 获取文本框的 文本 兼容字符串
- * @file_set($file, $data, $mode = 'a') 指针写入文件
+ * @mbSubstr($str, $start=0, $length, $charset="utf-8", $suffix=true) 字符串截取，支持中文和其他编码
  * @returnTrue($data = []) 类的方法返回数据(成功返回)
  * @returnTrue($data = []) 类的方法返回数据(失败返回)
+ * @shortenSinaUrl($long_url) 新浪长地址转短地址接口
  * @show_msg($msg = null, $return = false) 展示信息到页面
  * @start_with($word, $str) 是否以某个字符串开头
  * @success($text = "", $url = '', $time = 1) 跳转加提示 -- 成功跳转
@@ -266,6 +268,61 @@ if (!function_exists('apireturn')) {
         echo json_encode($re);
 
         die;
+    }
+}
+
+if (!function_exists('mbSubstr')) {
+    /**
+     * 字符串截取，支持中文和其他编码
+     * @static
+     * @access public
+     * @param string $str 需要转换的字符串
+     * @param string $start 开始位置
+     * @param string $length 截取长度
+     * @param string $charset 编码格式
+     * @param string $suffix 截断显示字符
+     * @return string
+     */
+    function mbSubstr($str, $start=0, $length, $charset="utf-8", $suffix=true) {
+        if(function_exists("mb_substr"))
+            $slice = mb_substr($str, $start, $length, $charset);
+        elseif(function_exists('iconv_substr')) {
+            $slice = iconv_substr($str,$start,$length,$charset);
+            if(false === $slice) {
+                $slice = '';
+            }
+        }else{
+            $re['utf-8']   = "/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/";
+            $re['gb2312'] = "/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/";
+            $re['gbk']    = "/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/";
+            $re['big5']   = "/[\x01-\x7f]|[\x81-\xfe]([\x40-\x7e]|\xa1-\xfe])/";
+            preg_match_all($re[$charset], $str, $match);
+            $slice = join("",array_slice($match[0], $start, $length));
+        }
+        return $suffix ? $slice.'...' : $slice;
+    }
+}
+
+if (!function_exists('shortenSinaUrl')) {
+    /**
+     * 新浪长地址转短地址接口
+     * @param $long_url
+     * @return mixed
+     */
+    function shortenSinaUrl($long_url) {
+        $apiKey='1681459862';//这里是你申请的应用的API KEY，随便写个应用名就会自动分配给你
+        $long_url = urlencode($long_url);
+        $apiUrl='http://api.t.sina.com.cn/short_url/shorten.json?source='.$apiKey.'&url_long='.$long_url;
+        $curlObj = curl_init();
+        curl_setopt($curlObj, CURLOPT_URL, $apiUrl);
+        curl_setopt($curlObj, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curlObj, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curlObj, CURLOPT_HEADER, 0);
+        curl_setopt($curlObj, CURLOPT_HTTPHEADER, array('Content-type:application/json'));
+        $response = curl_exec($curlObj);
+        curl_close($curlObj);
+        $json = json_decode($response);
+        return $json[0]->url_short;
     }
 }
 
