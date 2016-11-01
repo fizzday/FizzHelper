@@ -18,12 +18,12 @@
  * @v($data) 格式化打印, 不终止
  */
 
-if (!function_exists('v')) {
+if (!function_exists('vv')) {
     /**
      * 格式化打印, 不终止
      * @param string $data
      */
-    function v($data = '')
+    function vv($data = '')
     {
         echo "<pre>";
         print_r($data);
@@ -31,12 +31,12 @@ if (!function_exists('v')) {
     }
 }
 
-if (!function_exists('d')) {
+if (!function_exists('vd')) {
     /**
      * 格式化打印, 并终止
      * @param string $data
      */
-    function d($data = '')
+    function vd($data = '')
     {
         echo "<pre>";
         print_r($data);
@@ -265,7 +265,7 @@ if (!function_exists('apireturn')) {
             $re['msg'] = $data;
         }
 
-        echo json_encode($re);
+        echo json_encode($re, JSON_UNESCAPED_UNICODE);
 
         die;
     }
@@ -323,6 +323,83 @@ if (!function_exists('shortenSinaUrl')) {
         curl_close($curlObj);
         $json = json_decode($response);
         return $json[0]->url_short;
+    }
+}
+
+if (!function_exists('curl_post')) {
+    /**
+     * curl发送post请求
+     * @param string $url
+     * @param array/string $post_data
+     */
+    function curl_post($url, $post_data){
+        //初始化一个 cURL 对象
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        // 设置请求为post类型
+        curl_setopt($ch, CURLOPT_POST, 1);
+        // 添加post数据到请求中
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+
+        // 执行post请求，获得回复
+        $response= curl_exec($ch);
+        curl_close($ch);
+
+        return $response;
+    }
+}
+
+if (!function_exists('send_post')) {
+    /**
+     * 发送post请求
+     * @param string $url 请求地址
+     * @param array $post_data post键值对数据
+     * @return string
+     */
+    function send_post($url, $post_data) {
+
+        $postdata = http_build_query($post_data);
+        $options = array(
+            'http' => array(
+                'method' => 'POST',
+                'header' => 'Content-type:application/x-www-form-urlencoded',
+                'content' => $postdata,
+                'timeout' => 15 * 60 // 超时时间（单位:s）
+            )
+        );
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        return $result;
+    }
+}
+
+if (!function_exists('send_get')) {
+    /**
+     * 发送 get 请求
+     * @param string $url 请求地址
+     * @param array $get_data post键值对数据
+     * @return string
+     */
+    function send_get($url, $get_data='')
+    {
+
+        $postdata = http_build_query($get_data);
+
+        $options = array(
+            'http' => array(
+                'method' => 'GET',
+                'header' => 'Content-type:application/x-www-form-urlencoded',
+                'content' => $postdata,
+                'timeout' => 5 // 超时时间（单位:s）
+            )
+        );
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        return $result;
     }
 }
 
