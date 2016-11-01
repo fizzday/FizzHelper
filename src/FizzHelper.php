@@ -403,6 +403,44 @@ if (!function_exists('send_get')) {
     }
 }
 
+if (!function_exists('conf')) {
+    function conf($key='', $defaultValue='')
+    {
+        $conf = array();
+        $conf['levelNum'] = 9;
+        $conf['percentAll'] = array(
+            array('level'=>1, 'percent'=>0.1),
+            array('level'=>2, 'percent'=>0.1),
+            array('level'=>3, 'percent'=>0.1),
+            array('level'=>4, 'percent'=>0.1),
+            array('level'=>5, 'percent'=>0.1),
+            array('level'=>6, 'percent'=>0.1),
+            array('level'=>7, 'percent'=>0.1),
+            array('level'=>8, 'percent'=>0.1),
+            array('level'=>9, 'percent'=>0.1)
+        );
+
+        if (empty($key)) {
+            if (empty($defaultValue)) return $conf;
+            return $defaultValue;
+        }
+
+        // 判断key是否是多级的
+        if (strpos($key, '.')>0) {
+            $keyArr = explode('.', $key);
+
+            static $resConf = array();
+            foreach ($keyArr as $v) {
+                $resConf = $conf[$v];
+            }
+
+            return $resConf;
+        }
+
+        return $conf[$key];
+    }
+}
+
 if (!function_exists('returnFalse')) {
 
 }
