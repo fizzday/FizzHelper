@@ -441,6 +441,66 @@ if (!function_exists('conf')) {
     }
 }
 
+if (!function_exists('isMobile')) {
+    /**
+     * 判断是否是手机端
+     * @return bool
+     */
+    function isMobile()
+    {
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $mobile_browser = Array(
+            "mqqbrowser", //手机QQ浏览器
+            "opera mobi", //手机opera
+            "juc", "iuc",//uc浏览器
+            "fennec", "ios", "applewebKit/420", "applewebkit/525", "applewebkit/532", "ipad", "iphone", "ipaq", "ipod",
+            "iemobile", "windows ce",//windows phone
+            "240×320", "480×640", "acer", "android", "anywhereyougo.com", "asus", "audio", "blackberry", "blazer", "coolpad", "dopod", "etouch", "hitachi", "htc", "huawei", "jbrowser", "lenovo", "lg", "lg-", "lge-", "lge", "mobi", "moto", "nokia", "phone", "samsung", "sony", "symbian", "tablet", "tianyu", "wap", "xda", "xde", "zte"
+        );
+        $is_mobile = false;
+        foreach ($mobile_browser as $device) {
+            if (stristr($user_agent, $device)) {
+                $is_mobile = true;
+                break;
+            }
+        }
+        return $is_mobile;
+    }
+}
+
+if (!function_exists('curlUpload')) {
+    /**
+     * curl 上传文件
+     * @param string $url
+     * @param array $data
+     * @param string $file
+     * @param string $fileKey
+     */
+    function curlUpload($url='', $data=array(), $file='', $fileKey='')
+    {
+        if (empty($fileKey)) $fileKey = 'files';
+
+        if (!empty($file)) {
+            if (is_array($file)) {
+                foreach ($file as $key => $value) {
+                    $data[$fileKey.'['.$key.']'] = new \CURLFile(realpath($value));
+                }
+            } else {
+                $data[$fileKey.'[0]'] = new \CURLFile(realpath($file));
+            }
+        }
+
+        $request = curl_init($url);
+
+        curl_setopt($request, CURLOPT_POST, true);
+
+        curl_setopt($request, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+        echo curl_exec($request);
+        curl_close($request);
+    }
+}
+
 if (!function_exists('returnFalse')) {
 
 }
