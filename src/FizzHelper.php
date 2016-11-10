@@ -558,8 +558,9 @@ if (!function_exists('matchCash')) {
         // static $orc['payMoney'] = 0; // 当前打款人待匹配的余额
 
         // 将操作的金额放入容器
-        if (!$orc['payMoney']) $orc['payMoney'] = $payList[$orc['payIndex']]['money'];
-        if (!$orc['getMoney']) $orc['getMoney'] = $getList[$orc['getIndex']]['money'];
+        if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']])?$payList[$orc['payIndex']]['money']:0;
+        if (!$orc['getMoney']) $orc['getMoney'] = isset($getList[$orc['getIndex']])?$getList[$orc['getIndex']]['money']:0;
+
         // 判断收款人是否匹配完毕
         if (empty($getList[$orc['getIndex']])) { // 匹配系统账户
             $countAdmin = count($adminList);
