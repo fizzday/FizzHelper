@@ -565,7 +565,6 @@ if (!function_exists('matchCash')) {
             $countAdmin = count($adminList);
             $adminIndex = mt_rand(0, $countAdmin-1);
             $match      = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $adminList[$adminIndex]['uid'], 'money' => $orc['payMoney']);
-            // v($match);
             $matchList[]     = $match;
             $orc['payMoney'] = 0;
             $orc['payIndex']++;
