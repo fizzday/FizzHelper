@@ -501,6 +501,102 @@ if (!function_exists('curlUpload')) {
     }
 }
 
+if (!function_exists('matchCash')) {
+    /**
+     * 互助匹配
+     * @param $payList      提供帮助列表
+     * @param $getList      获取帮助列表
+     * @param $adminList    系统账号列表
+     * @param array $orc    缓存容器
+     * @return array
+     */
+    function matchCash($payList, $getList, $adminList, $orc=array('getIndex'=>0, 'getMoney'=>0, 'payIndex'=>0, 'payMoney'=>0))
+    {
+        static $matchList = array();
+        // static $orc['getIndex'] = 0; // 当前收款人序号
+        // static $orc['getMoney'] = 0; // 当前收款人待匹配的余额
+        // static $payIndex = 0; // 当前打款人序号
+        // static $orc['payMoney'] = 0; // 当前打款人待匹配的余额
+
+        // 将操作的金额放入容器
+        if (!$orc['payMoney']) $orc['payMoney'] = $payList[$orc['payIndex']]['money'];
+        if (!$orc['getMoney']) $orc['getMoney'] = $getList[$orc['getIndex']]['money'];
+
+        // 判断收款人是否匹配完毕
+        if (empty($getList[$orc['getIndex']])) { // 匹配系统账户
+            $countAdmin = count($adminList);
+            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$adminList[mt_rand(0, $countAdmin)]['uid'], 'money'=>$orc['payMoney']);
+            // v($match);
+            $matchList[] = $match;
+            $orc['payMoney'] = 0;
+            $orc['payIndex']++;
+
+            if (!empty($payList[$orc['payIndex']])) {
+                matchFunc($payList, $getList, $adminList, $orc);
+            }
+            return $matchList;
+        }
+
+        // 判断提供帮助的金额是否大于将要接收帮助的人的提现金额
+        $payListLeave = array_slice($payList, ($orc['payIndex']));
+        $paySumMoney = sumFieldFromTwiceArray('money', $payListLeave) + $orc['payMoney'];
+
+        if ($paySumMoney < $getList[$orc['getIndex']]['money']) {
+            $getList = array();
+            matchFunc($payList, $getList, $adminList, $orc);
+            return $matchList;
+        }
+
+        $minus = $orc['payMoney']-$orc['getMoney'];
+        if ($minus > 0) {   // 打款的有剩余
+            $money_real = $orc['getMoney'];    // 实际订单金额
+            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$getList[$orc['getIndex']]['uid'], 'money'=>$money_real);
+            $orc['payMoney'] = $minus;         // 打款有剩余
+            $orc['getMoney'] = 0;              // 收款重置为0
+            $orc['getIndex'] ++;
+        } elseif ($minus < 0) {
+            $money_real = $orc['payMoney'];    // 实际订单金额
+            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$getList[$orc['getIndex']]['uid'], 'money'=>$money_real);
+            $orc['getMoney'] = abs($minus);         // 收款有剩余
+            $orc['payMoney'] = 0;              // 打款重置为0
+            $orc['payIndex'] ++;
+        } else {
+            $money_real = $orc['payMoney'];
+            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$getList[$orc['getIndex']]['uid'], 'money'=>$money_real);
+            $orc['getMoney'] = 0;
+            $orc['payMoney'] = 0;
+            $orc['getIndex'] ++;
+            $orc['payIndex'] ++;
+        }
+        $matchList[] = $match;
+
+        if (isset($payList[$orc['payIndex']]) || ($orc['payMoney']>0)) {
+            matchFunc($payList, $getList, $adminList, $orc);
+        }
+
+        return $matchList;
+    }
+}
+
+if (!function_exists('sumFieldFromTwiceArray')) {
+    /**
+     * 获取二维数组中某个字段的和
+     * @param $field    字段
+     * @param $arr      要获取的二维数组
+     * @return int
+     */
+    function sumFieldFromTwiceArray($field, $arr){
+        $str = 0;
+        $arr = json_decode(json_encode($arr), true);
+        foreach ($arr as $k=>$v){
+            if(!empty($v[$field])) {
+                $str += $v[$field];
+            }
+        }
+        return $str;
+    }
+}
+
 if (!function_exists('returnFalse')) {
 
 }
