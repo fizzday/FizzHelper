@@ -229,45 +229,63 @@ if (!function_exists('file_set')) {
 
 if (!function_exists('apireturn')) {
     /**
-     * api 返回json
-     * @param string $data   返回数据(或提示)
-     * @param string $status 返回状态
-     * @param string $arr    其他信息
+     * 接口json返回
+     * @param $data
+     * @param int $status 0成功, 1失败, 100验证失败
+     * @return string
      */
-    function apireturn($data = '', $status = "0000", $arr = '')
+    function apireturn($data='', $status=0)
     {
-        $re = [];
+        $re = array();
+        $re['status'] = $status;
+        $re['data'] = '';
+        $re['msg'] = '';
 
-        $re['code'] = $status;
-
-        if ($status == '0000') {
-
-            $re['info'] = $arr;
-
-            $data_res = array();
-
-            if (!empty($data[0])) {
-                $re['data'] = $data;
-            } else {
-
-                $data_res[] = $data;
-                $re['data'] = $data_res;
-
-                if ($data == "[]" || empty($data)) {
-                    $re['data'] = $data;
-                }
-
-            }
-
+        if ($status == 0) {
+            $re['data'] = $data;
+            $re['status'] = 0;
             $re['msg'] = 'success';
-
-        } else if ($status == "9999") {
+        } else {
             $re['msg'] = $data;
+            if (empty($data)) {
+                $re['msg'] = 'fail';
+                if ($status == 100) $re['msg'] = 'verification failed';
+            }
         }
+//        if (empty($re['data'])) unset($re['data']);
 
         echo json_encode($re, JSON_UNESCAPED_UNICODE);
-
         die;
+    }
+}
+
+if (!function_exists('internalreturn')) {
+    /**
+     * php内部方法返回
+     * @param $data
+     * @param int $status 0成功, 1失败
+     * @return string
+     */
+    function internalreturn($data='', $status=0)
+    {
+        $re = array();
+        $re['status'] = $status;
+        $re['data'] = '';
+        $re['msg'] = '';
+
+        if ($status == 0) {
+            $re['data'] = $data;
+            $re['status'] = 0;
+            $re['msg'] = 'success';
+        } else {
+            $re['msg'] = $data;
+            if (empty($data)) {
+                $re['msg'] = 'fail';
+            }
+        }
+//        if (empty($re['data'])) unset($re['data']);
+
+        return $re;
     }
 }
 
@@ -545,7 +563,7 @@ if (!function_exists('matchCash')) {
         // 判断收款人是否匹配完毕
         if (empty($getList[$orc['getIndex']])) { // 匹配系统账户
             $countAdmin = count($adminList);
-            $adminIndex = mt_rand(0, $countAdmin);
+            $adminIndex = mt_rand(0, $countAdmin-1);
             $match      = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $adminList[$adminIndex]['uid'], 'money' => $orc['payMoney']);
             // v($match);
             $matchList[]     = $match;
