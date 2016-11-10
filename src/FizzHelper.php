@@ -276,30 +276,32 @@ if (!function_exists('mbSubstr')) {
      * 字符串截取，支持中文和其他编码
      * @static
      * @access public
-     * @param string $str 需要转换的字符串
-     * @param string $start 开始位置
-     * @param string $length 截取长度
+     * @param string $str     需要转换的字符串
+     * @param string $start   开始位置
+     * @param string $length  截取长度
      * @param string $charset 编码格式
-     * @param string $suffix 截断显示字符
+     * @param string $suffix  截断显示字符
      * @return string
      */
-    function mbSubstr($str, $start=0, $length, $charset="utf-8", $suffix=true) {
-        if(function_exists("mb_substr"))
+    function mbSubstr($str, $start = 0, $length, $charset = "utf-8", $suffix = true)
+    {
+        if (function_exists("mb_substr"))
             $slice = mb_substr($str, $start, $length, $charset);
-        elseif(function_exists('iconv_substr')) {
-            $slice = iconv_substr($str,$start,$length,$charset);
-            if(false === $slice) {
+        elseif (function_exists('iconv_substr')) {
+            $slice = iconv_substr($str, $start, $length, $charset);
+            if (false === $slice) {
                 $slice = '';
             }
-        }else{
-            $re['utf-8']   = "/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/";
+        } else {
+            $re['utf-8']  = "/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/";
             $re['gb2312'] = "/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/";
             $re['gbk']    = "/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/";
             $re['big5']   = "/[\x01-\x7f]|[\x81-\xfe]([\x40-\x7e]|\xa1-\xfe])/";
             preg_match_all($re[$charset], $str, $match);
-            $slice = join("",array_slice($match[0], $start, $length));
+            $slice = join("", array_slice($match[0], $start, $length));
         }
-        return $suffix ? $slice.'...' : $slice;
+
+        return $suffix ? $slice . '...' : $slice;
     }
 }
 
@@ -309,11 +311,12 @@ if (!function_exists('shortenSinaUrl')) {
      * @param $long_url
      * @return mixed
      */
-    function shortenSinaUrl($long_url) {
-        $apiKey='1681459862';//这里是你申请的应用的API KEY，随便写个应用名就会自动分配给你
+    function shortenSinaUrl($long_url)
+    {
+        $apiKey   = '1681459862';//这里是你申请的应用的API KEY，随便写个应用名就会自动分配给你
         $long_url = urlencode($long_url);
-        $apiUrl='http://api.t.sina.com.cn/short_url/shorten.json?source='.$apiKey.'&url_long='.$long_url;
-        $curlObj = curl_init();
+        $apiUrl   = 'http://api.t.sina.com.cn/short_url/shorten.json?source=' . $apiKey . '&url_long=' . $long_url;
+        $curlObj  = curl_init();
         curl_setopt($curlObj, CURLOPT_URL, $apiUrl);
         curl_setopt($curlObj, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curlObj, CURLOPT_SSL_VERIFYPEER, 0);
@@ -322,6 +325,7 @@ if (!function_exists('shortenSinaUrl')) {
         $response = curl_exec($curlObj);
         curl_close($curlObj);
         $json = json_decode($response);
+
         return $json[0]->url_short;
     }
 }
@@ -330,9 +334,10 @@ if (!function_exists('curl_post')) {
     /**
      * curl发送post请求
      * @param string $url
-     * @param array/string $post_data
+     * @param array /string $post_data
      */
-    function curl_post($url, $post_data){
+    function curl_post($url, $post_data)
+    {
         //初始化一个 cURL 对象
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -344,7 +349,7 @@ if (!function_exists('curl_post')) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
 
         // 执行post请求，获得回复
-        $response= curl_exec($ch);
+        $response = curl_exec($ch);
         curl_close($ch);
 
         return $response;
@@ -354,23 +359,24 @@ if (!function_exists('curl_post')) {
 if (!function_exists('send_post')) {
     /**
      * 发送post请求
-     * @param string $url 请求地址
+     * @param string $url      请求地址
      * @param array $post_data post键值对数据
      * @return string
      */
-    function send_post($url, $post_data) {
+    function send_post($url, $post_data)
+    {
 
         $postdata = http_build_query($post_data);
-        $options = array(
+        $options  = array(
             'http' => array(
-                'method' => 'POST',
-                'header' => 'Content-type:application/x-www-form-urlencoded',
+                'method'  => 'POST',
+                'header'  => 'Content-type:application/x-www-form-urlencoded',
                 'content' => $postdata,
                 'timeout' => 15 * 60 // 超时时间（单位:s）
             )
         );
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
+        $context  = stream_context_create($options);
+        $result   = file_get_contents($url, false, $context);
 
         return $result;
     }
@@ -379,54 +385,55 @@ if (!function_exists('send_post')) {
 if (!function_exists('send_get')) {
     /**
      * 发送 get 请求
-     * @param string $url 请求地址
+     * @param string $url     请求地址
      * @param array $get_data post键值对数据
      * @return string
      */
-    function send_get($url, $get_data='')
+    function send_get($url, $get_data = '')
     {
 
         $postdata = http_build_query($get_data);
 
         $options = array(
             'http' => array(
-                'method' => 'GET',
-                'header' => 'Content-type:application/x-www-form-urlencoded',
+                'method'  => 'GET',
+                'header'  => 'Content-type:application/x-www-form-urlencoded',
                 'content' => $postdata,
                 'timeout' => 5 // 超时时间（单位:s）
             )
         );
         $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
+        $result  = file_get_contents($url, false, $context);
 
         return $result;
     }
 }
 
 if (!function_exists('conf')) {
-    function conf($key='', $defaultValue='')
+    function conf($key = '', $defaultValue = '')
     {
-        $conf = array();
-        $conf['levelNum'] = 9;
+        $conf               = array();
+        $conf['levelNum']   = 9;
         $conf['percentAll'] = array(
-            array('level'=>1, 'percent'=>0.1),
-            array('level'=>2, 'percent'=>0.1),
-            array('level'=>3, 'percent'=>0.1),
-            array('level'=>4, 'percent'=>0.1),
-            array('level'=>5, 'percent'=>0.1),
-            array('level'=>6, 'percent'=>0.1),
-            array('level'=>7, 'percent'=>0.1),
-            array('level'=>8, 'percent'=>0.1),
-            array('level'=>9, 'percent'=>0.1)
+            array('level' => 1, 'percent' => 0.1),
+            array('level' => 2, 'percent' => 0.1),
+            array('level' => 3, 'percent' => 0.1),
+            array('level' => 4, 'percent' => 0.1),
+            array('level' => 5, 'percent' => 0.1),
+            array('level' => 6, 'percent' => 0.1),
+            array('level' => 7, 'percent' => 0.1),
+            array('level' => 8, 'percent' => 0.1),
+            array('level' => 9, 'percent' => 0.1)
         );
 
         if (empty($key)) {
             if (empty($defaultValue)) return $conf;
+
             return $defaultValue;
         }
 
         // 判断key是否是多级的
-        if (strpos($key, '.')>0) {
+        if (strpos($key, '.') > 0) {
             $keyArr = explode('.', $key);
 
             static $resConf = array();
@@ -448,7 +455,7 @@ if (!function_exists('isMobile')) {
      */
     function isMobile()
     {
-        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $user_agent     = $_SERVER['HTTP_USER_AGENT'];
         $mobile_browser = Array(
             "mqqbrowser", //手机QQ浏览器
             "opera mobi", //手机opera
@@ -457,13 +464,14 @@ if (!function_exists('isMobile')) {
             "iemobile", "windows ce",//windows phone
             "240×320", "480×640", "acer", "android", "anywhereyougo.com", "asus", "audio", "blackberry", "blazer", "coolpad", "dopod", "etouch", "hitachi", "htc", "huawei", "jbrowser", "lenovo", "lg", "lg-", "lge-", "lge", "mobi", "moto", "nokia", "phone", "samsung", "sony", "symbian", "tablet", "tianyu", "wap", "xda", "xde", "zte"
         );
-        $is_mobile = false;
+        $is_mobile      = false;
         foreach ($mobile_browser as $device) {
             if (stristr($user_agent, $device)) {
                 $is_mobile = true;
                 break;
             }
         }
+
         return $is_mobile;
     }
 }
@@ -476,17 +484,17 @@ if (!function_exists('curlUpload')) {
      * @param string $file
      * @param string $fileKey
      */
-    function curlUpload($url='', $data=array(), $file='', $fileKey='')
+    function curlUpload($url = '', $data = array(), $file = '', $fileKey = '')
     {
         if (empty($fileKey)) $fileKey = 'files';
 
         if (!empty($file)) {
             if (is_array($file)) {
                 foreach ($file as $key => $value) {
-                    $data[$fileKey.'['.$key.']'] = new \CURLFile(realpath($value));
+                    $data[$fileKey . '[' . $key . ']'] = new \CURLFile(realpath($value));
                 }
             } else {
-                $data[$fileKey.'[0]'] = new \CURLFile(realpath($file));
+                $data[$fileKey . '[0]'] = new \CURLFile(realpath($file));
             }
         }
 
@@ -504,13 +512,26 @@ if (!function_exists('curlUpload')) {
 if (!function_exists('matchCash')) {
     /**
      * 互助匹配
+     * 数据示例:
+     * // $payList[] = array('uid'=>11, 'money'=>200);
+     * // $payList[] = array('uid'=>12, 'money'=>200);
+     * // $payList[] = array('uid'=>13, 'money'=>500);
+     *
+     * // $getList[] = array('uid'=>21, 'money'=>100);
+     * // $getList[] = array('uid'=>22, 'money'=>200);
+     * // $getList[] = array('uid'=>23, 'money'=>200);
+     *
+     * // $adminList[] = array('uid'=>31);
+     * // $adminList[] = array('uid'=>32);
+     * // $adminList[] = array('uid'=>33);
+     *
      * @param $payList      提供帮助列表
      * @param $getList      获取帮助列表
      * @param $adminList    系统账号列表
      * @param array $orc    缓存容器
      * @return array
      */
-    function matchCash($payList, $getList, $adminList, $orc=array('getIndex'=>0, 'getMoney'=>0, 'payIndex'=>0, 'payMoney'=>0))
+    function matchCash($payList, $getList, $adminList, $orc = array('getIndex' => 0, 'getMoney' => 0, 'payIndex' => 0, 'payMoney' => 0))
     {
         static $matchList = array();
         // static $orc['getIndex'] = 0; // 当前收款人序号
@@ -521,57 +542,59 @@ if (!function_exists('matchCash')) {
         // 将操作的金额放入容器
         if (!$orc['payMoney']) $orc['payMoney'] = $payList[$orc['payIndex']]['money'];
         if (!$orc['getMoney']) $orc['getMoney'] = $getList[$orc['getIndex']]['money'];
-
         // 判断收款人是否匹配完毕
         if (empty($getList[$orc['getIndex']])) { // 匹配系统账户
             $countAdmin = count($adminList);
-            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$adminList[mt_rand(0, $countAdmin)]['uid'], 'money'=>$orc['payMoney']);
+            $adminIndex = mt_rand(0, $countAdmin);
+            $match      = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $adminList[$adminIndex]['uid'], 'money' => $orc['payMoney']);
             // v($match);
-            $matchList[] = $match;
+            $matchList[]     = $match;
             $orc['payMoney'] = 0;
             $orc['payIndex']++;
 
             if (!empty($payList[$orc['payIndex']])) {
-                matchFunc($payList, $getList, $adminList, $orc);
+                matchCash($payList, $getList, $adminList, $orc);
             }
+
             return $matchList;
         }
 
         // 判断提供帮助的金额是否大于将要接收帮助的人的提现金额
         $payListLeave = array_slice($payList, ($orc['payIndex']));
-        $paySumMoney = sumFieldFromTwiceArray('money', $payListLeave) + $orc['payMoney'];
+        $paySumMoney  = sumFieldFromTwiceArray('money', $payListLeave) + $orc['payMoney'];
 
         if ($paySumMoney < $getList[$orc['getIndex']]['money']) {
             $getList = array();
-            matchFunc($payList, $getList, $adminList, $orc);
+            matchCash($payList, $getList, $adminList, $orc);
+
             return $matchList;
         }
 
-        $minus = $orc['payMoney']-$orc['getMoney'];
+        $minus = $orc['payMoney'] - $orc['getMoney'];
         if ($minus > 0) {   // 打款的有剩余
-            $money_real = $orc['getMoney'];    // 实际订单金额
-            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$getList[$orc['getIndex']]['uid'], 'money'=>$money_real);
+            $money_real      = $orc['getMoney'];    // 实际订单金额
+            $match           = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $getList[$orc['getIndex']]['uid'], 'money' => $money_real);
             $orc['payMoney'] = $minus;         // 打款有剩余
             $orc['getMoney'] = 0;              // 收款重置为0
-            $orc['getIndex'] ++;
+            $orc['getIndex']++;
         } elseif ($minus < 0) {
-            $money_real = $orc['payMoney'];    // 实际订单金额
-            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$getList[$orc['getIndex']]['uid'], 'money'=>$money_real);
+            $money_real      = $orc['payMoney'];    // 实际订单金额
+            $match           = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $getList[$orc['getIndex']]['uid'], 'money' => $money_real);
             $orc['getMoney'] = abs($minus);         // 收款有剩余
             $orc['payMoney'] = 0;              // 打款重置为0
-            $orc['payIndex'] ++;
+            $orc['payIndex']++;
         } else {
-            $money_real = $orc['payMoney'];
-            $match = array('payuid'=>$payList[$orc['payIndex']]['uid'], 'getuid'=>$getList[$orc['getIndex']]['uid'], 'money'=>$money_real);
+            $money_real      = $orc['payMoney'];
+            $match           = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $getList[$orc['getIndex']]['uid'], 'money' => $money_real);
             $orc['getMoney'] = 0;
             $orc['payMoney'] = 0;
-            $orc['getIndex'] ++;
-            $orc['payIndex'] ++;
+            $orc['getIndex']++;
+            $orc['payIndex']++;
         }
         $matchList[] = $match;
 
-        if (isset($payList[$orc['payIndex']]) || ($orc['payMoney']>0)) {
-            matchFunc($payList, $getList, $adminList, $orc);
+        if (isset($payList[$orc['payIndex']]) || ($orc['payMoney'] > 0)) {
+            matchCash($payList, $getList, $adminList, $orc);
         }
 
         return $matchList;
@@ -585,14 +608,16 @@ if (!function_exists('sumFieldFromTwiceArray')) {
      * @param $arr      要获取的二维数组
      * @return int
      */
-    function sumFieldFromTwiceArray($field, $arr){
+    function sumFieldFromTwiceArray($field, $arr)
+    {
         $str = 0;
         $arr = json_decode(json_encode($arr), true);
-        foreach ($arr as $k=>$v){
-            if(!empty($v[$field])) {
+        foreach ($arr as $k => $v) {
+            if (!empty($v[$field])) {
                 $str += $v[$field];
             }
         }
+
         return $str;
     }
 }
