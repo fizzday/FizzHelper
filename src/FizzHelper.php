@@ -552,10 +552,6 @@ if (!function_exists('matchCash')) {
     function matchCash($payList, $getList, $adminList, $orc = array('getIndex' => 0, 'getMoney' => 0, 'payIndex' => 0, 'payMoney' => 0))
     {
         static $matchList = array();
-        // static $orc['getIndex'] = 0; // 当前收款人序号
-        // static $orc['getMoney'] = 0; // 当前收款人待匹配的余额
-        // static $payIndex = 0; // 当前打款人序号
-        // static $orc['payMoney'] = 0; // 当前打款人待匹配的余额
 
         // 将操作的金额放入容器
         if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']])?$payList[$orc['payIndex']]['money']:0;
