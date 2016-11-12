@@ -348,7 +348,7 @@ if (!function_exists('shortenSinaUrl')) {
     }
 }
 
-if (!function_exists('curl_post')) {
+if (!function_exists('curlPost')) {
     /**
      * curl发送post请求
      * @param string $url
@@ -374,7 +374,7 @@ if (!function_exists('curl_post')) {
     }
 }
 
-if (!function_exists('send_post')) {
+if (!function_exists('sendPost')) {
     /**
      * 发送post请求
      * @param string $url      请求地址
@@ -400,7 +400,7 @@ if (!function_exists('send_post')) {
     }
 }
 
-if (!function_exists('send_get')) {
+if (!function_exists('sendGet')) {
     /**
      * 发送 get 请求
      * @param string $url     请求地址
