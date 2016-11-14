@@ -107,7 +107,8 @@ if (!function_exists('success')) {
     {
         if (empty($text)) $text = '操作成功';
         if (empty($url)) {
-            $url = $_SERVER["HTTP_REFERER"];
+//            $url = $_SERVER["HTTP_REFERER"];
+            $url = '/';
         }
         echo show_msg($text, true);
         echo '<META HTTP-EQUIV="refresh" CONTENT="' . $time . '; URL=' . $url . '">';
@@ -286,6 +287,7 @@ if (!function_exists('internalreturn')) {
 //        if (empty($re['data'])) unset($re['data']);
 
         return $re;
+        die;
     }
 }
 
