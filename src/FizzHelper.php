@@ -533,17 +533,20 @@ if (!function_exists('matchCash')) {
     /**
      * 互助匹配
      * 数据示例:
-     * // $payList[] = array('uid'=>11, 'money'=>200);
-     * // $payList[] = array('uid'=>12, 'money'=>200);
-     * // $payList[] = array('uid'=>13, 'money'=>500);
+     * id为当前匹配的排单数据id, money为当前单的金额, param为其他参数, 可以是一个参数(如:用户uid),可以是多个(如:array('uid'=>3,'mobile'=>13212341234))
      *
-     * // $getList[] = array('uid'=>21, 'money'=>100);
-     * // $getList[] = array('uid'=>22, 'money'=>200);
-     * // $getList[] = array('uid'=>23, 'money'=>200);
-     *
-     * // $adminList[] = array('uid'=>31);
-     * // $adminList[] = array('uid'=>32);
-     * // $adminList[] = array('uid'=>33);
+     * 打款人列表,
+     * // $payList[] = array('id'=>11, 'money'=>200, 'param'=>1);
+     * // $payList[] = array('id'=>12, 'money'=>200, 'param'=>1);
+     * // $payList[] = array('id'=>13, 'money'=>500, 'param'=>1);
+     * 收款人列表
+     * // $getList[] = array('id'=>21, 'money'=>100, 'param'=>1);
+     * // $getList[] = array('id'=>22, 'money'=>200, 'param'=>1);
+     * // $getList[] = array('id'=>23, 'money'=>200, 'param'=>1);
+     * 系统匹配人员列表, 主要考虑匹配剩余的人, 要匹配完全, 必须要有多余接收账户
+     * // $adminList[] = array('id'=>31, 'param'=>1);
+     * // $adminList[] = array('id'=>32, 'param'=>1);
+     * // $adminList[] = array('id'=>33, 'param'=>1);
      *
      * @param $payList      提供帮助列表
      * @param $getList      获取帮助列表
@@ -553,18 +556,24 @@ if (!function_exists('matchCash')) {
      */
     function matchCash($payList, $getList, $adminList, $orc = array('getIndex' => 0, 'getMoney' => 0, 'payIndex' => 0, 'payMoney' => 0))
     {
+        if (empty($payList) || empty($adminList)) dd(internalreturn('paylist & adminlist can not empty', 1));
         static $matchList = array();
 
         // 将操作的金额放入容器
-        if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']])?$payList[$orc['payIndex']]['money']:0;
-        if (!$orc['getMoney']) $orc['getMoney'] = isset($getList[$orc['getIndex']])?$getList[$orc['getIndex']]['money']:0;
+        if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']]['money'])?$payList[$orc['payIndex']]['money']:0;
+        if (!$orc['getMoney']) $orc['getMoney'] = isset($getList[$orc['getIndex']]['money'])?$getList[$orc['getIndex']]['money']:0;
 
+        // 匹配结果
+        $param = array();
+        $param['payParam'] = isset($payList[$orc['payIndex']]['param'])?$payList[$orc['payIndex']]['param']:'';
+        $param['getParam'] = isset($getList[$orc['getIndex']]['param'])?$getList[$orc['getIndex']]['param']:'';
         // 判断收款人是否匹配完毕
-        if (empty($getList[$orc['getIndex']])) { // 匹配系统账户
+        if (empty($getList[$orc['getIndex']])) { // 匹配完毕, 匹配系统账户
             $countAdmin = count($adminList);
             $adminIndex = mt_rand(0, $countAdmin-1);
-            $match      = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $adminList[$adminIndex]['uid'], 'money' => $orc['payMoney']);
-            $matchList[]     = $match;
+            $param['getParam'] = isset($adminList[$adminIndex]['param'])?$adminList[$adminIndex]['param']:'';
+            $match      = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $adminList[$adminIndex]['id'], 'money' => $orc['payMoney']);
+            $matchList[]     = array_merge($match, $param);
             $orc['payMoney'] = 0;
             $orc['payIndex']++;
 
@@ -589,25 +598,25 @@ if (!function_exists('matchCash')) {
         $minus = $orc['payMoney'] - $orc['getMoney'];
         if ($minus > 0) {   // 打款的有剩余
             $money_real      = $orc['getMoney'];    // 实际订单金额
-            $match           = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $getList[$orc['getIndex']]['uid'], 'money' => $money_real);
+            $match           = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $getList[$orc['getIndex']]['id'], 'money' => $money_real);
             $orc['payMoney'] = $minus;         // 打款有剩余
             $orc['getMoney'] = 0;              // 收款重置为0
             $orc['getIndex']++;
         } elseif ($minus < 0) {
             $money_real      = $orc['payMoney'];    // 实际订单金额
-            $match           = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $getList[$orc['getIndex']]['uid'], 'money' => $money_real);
+            $match           = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $getList[$orc['getIndex']]['id'], 'money' => $money_real);
             $orc['getMoney'] = abs($minus);         // 收款有剩余
             $orc['payMoney'] = 0;              // 打款重置为0
             $orc['payIndex']++;
         } else {
             $money_real      = $orc['payMoney'];
-            $match           = array('payuid' => $payList[$orc['payIndex']]['uid'], 'getuid' => $getList[$orc['getIndex']]['uid'], 'money' => $money_real);
+            $match           = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $getList[$orc['getIndex']]['id'], 'money' => $money_real);
             $orc['getMoney'] = 0;
             $orc['payMoney'] = 0;
             $orc['getIndex']++;
             $orc['payIndex']++;
         }
-        $matchList[] = $match;
+        $matchList[]     = array_merge($match, $param);
 
         if (isset($payList[$orc['payIndex']]) || ($orc['payMoney'] > 0)) {
             matchCash($payList, $getList, $adminList, $orc);
