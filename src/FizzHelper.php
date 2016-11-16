@@ -140,7 +140,7 @@ if (!function_exists('getCode')) {
     /**
      * 获取随机字符串 (默认随机字母或数字, 如果 $letter 和 $num 都为 true, 则是字母开头)
      * @param int $len    长度
-     * @param array $conf ['number', 'letter', 'upper'] 或者 单个的 'num'
+     * @param array $conf ['number', 'letter', 'upper'] 或者 单个的如 'num'
      * @return string       期望长度的返回值
      */
     function getCode($len = 10, $conf = ['number', 'letter'])
@@ -159,7 +159,15 @@ if (!function_exists('getCode')) {
         });
 
         // 打乱并截取对应长度的字符串
-        $str = substr(str_shuffle($str_all), 0, $len);
+        $str_res = str_shuffle($str_all);
+        $str_res_count = strlen($str_res);
+
+        // 根据长度取对应的数据
+        $str = '';
+        for ($i=0; $i<$len; $i++) {
+            $index = mt_rand(0,$str_res_count-1);
+            $str .= $str_res[$index];
+        }
 
         return $str;
     }
