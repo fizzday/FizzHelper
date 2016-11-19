@@ -88,7 +88,7 @@ if (!function_exists('error')) {
     {
         if (empty($text)) $text = '操作有误，请重新操作';
         if (empty($url)) {
-            $url = $_SERVER["HTTP_REFERER"];
+            $url = isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'/';
         }
         echo show_msg($text, true);
         echo '<META HTTP-EQUIV="refresh" CONTENT="' . $time . '; URL=' . $url . '">';
@@ -107,8 +107,8 @@ if (!function_exists('success')) {
     {
         if (empty($text)) $text = '操作成功';
         if (empty($url)) {
-//            $url = $_SERVER["HTTP_REFERER"];
-            $url = '/';
+            $url = $_SERVER["HTTP_REFERER"];
+//            $url = '/';
         }
         echo show_msg($text, true);
         echo '<META HTTP-EQUIV="refresh" CONTENT="' . $time . '; URL=' . $url . '">';
