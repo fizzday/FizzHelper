@@ -655,6 +655,43 @@ if (!function_exists('sumFieldFromTwiceArray')) {
     }
 }
 
+if (!function_exists('timeDiff')) {
+    /**
+     * 计算时间差(日,时分秒)
+     * @param $starttime(开始时间, 可以是时间戳,也可以是日期格式类似, endtime)
+     * @param $endtime
+     * @param string $type(day, hour, minute, second)
+     * @return array|bool|mixed
+     */
+    function timeDiff($starttime,$endtime,$type='')
+    {
+        $s = strpos($starttime, '-');
+        $e = strpos($endtime, '-');
+
+        if ($s) $starttime = strtotime($starttime);
+        if ($e) $endtime = strtotime($endtime);
+
+        //计算天数
+        $timediff = abs($endtime-$starttime);
+        $days = floor($timediff/86400);
+        //计算小时数
+        $remain = $timediff%86400;
+        $hours = floor($remain/3600);
+        //计算分钟数
+        $remain = $remain%3600;
+        $mins = floor($remain/60);
+        //计算秒数
+        $secs = $remain%60;
+
+        $res = array("day" => $days,"hour" => $hours,"minute" => $mins,"second" => $secs);
+        if (!empty($type))  {
+            if (!in_array($type, array_keys($res))) return false;
+            return $res[$type];
+        }
+        return $res;
+    }
+}
+
 if (!function_exists('returnFalse')) {
 
 }
