@@ -88,7 +88,7 @@ if (!function_exists('error')) {
     {
         if (empty($text)) $text = '操作有误，请重新操作';
         if (empty($url)) {
-            $url = isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'/';
+            $url = isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : '/';
         }
         echo show_msg($text, true);
         echo '<META HTTP-EQUIV="refresh" CONTENT="' . $time . '; URL=' . $url . '">';
@@ -159,13 +159,13 @@ if (!function_exists('getCode')) {
         });
 
         // 打乱并截取对应长度的字符串
-        $str_res = str_shuffle($str_all);
+        $str_res       = str_shuffle($str_all);
         $str_res_count = strlen($str_res);
 
         // 根据长度取对应的数据
         $str = '';
-        for ($i=0; $i<$len; $i++) {
-            $index = mt_rand(0,$str_res_count-1);
+        for ($i = 0; $i < $len; $i++) {
+            $index = mt_rand(0, $str_res_count - 1);
             $str .= $str_res[$index];
         }
 
@@ -243,17 +243,17 @@ if (!function_exists('apireturn')) {
      * @param int $status 0成功, 1失败, 100验证失败
      * @return string
      */
-    function apireturn($data='', $status=0)
+    function apireturn($data = '', $status = 0)
     {
-        $re = array();
+        $re           = array();
         $re['status'] = $status;
-        $re['data'] = '';
-        $re['msg'] = '';
+        $re['data']   = '';
+        $re['msg']    = '';
 
         if ($status == 0) {
-            $re['data'] = $data;
+            $re['data']   = $data;
             $re['status'] = 0;
-            $re['msg'] = 'success';
+            $re['msg']    = 'success';
         } else {
             $re['msg'] = $data;
             if (empty($data)) {
@@ -275,23 +275,24 @@ if (!function_exists('internalreturn')) {
      * @param int $status 0成功, 1失败
      * @return string
      */
-    function internalreturn($data='', $status=0)
+    function internalreturn($data = '', $status = 0)
     {
-        $re = array();
+        $re           = array();
         $re['status'] = $status;
-        $re['data'] = '';
-        $re['msg'] = '';
+        $re['data']   = '';
+        $re['msg']    = '';
 
         if ($status == 0) {
-            $re['data'] = $data;
+            $re['data']   = $data;
             $re['status'] = 0;
-            $re['msg'] = 'success';
+            $re['msg']    = 'success';
         } else {
             $re['msg'] = $data;
             if (empty($data)) {
                 $re['msg'] = 'fail';
             }
         }
+
 //        if (empty($re['data'])) unset($re['data']);
 
         return $re;
@@ -568,21 +569,21 @@ if (!function_exists('matchCash')) {
         static $matchList = array();
 
         // 将操作的金额放入容器
-        if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']]['money'])?$payList[$orc['payIndex']]['money']:0;
-        if (!$orc['getMoney']) $orc['getMoney'] = isset($getList[$orc['getIndex']]['money'])?$getList[$orc['getIndex']]['money']:0;
+        if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']]['money']) ? $payList[$orc['payIndex']]['money'] : 0;
+        if (!$orc['getMoney']) $orc['getMoney'] = isset($getList[$orc['getIndex']]['money']) ? $getList[$orc['getIndex']]['money'] : 0;
 
         // 匹配结果
-        $param = array();
-        $param['payParam'] = isset($payList[$orc['payIndex']]['param'])?$payList[$orc['payIndex']]['param']:'';
-        $param['getParam'] = isset($getList[$orc['getIndex']]['param'])?$getList[$orc['getIndex']]['param']:'';
+        $param             = array();
+        $param['payParam'] = isset($payList[$orc['payIndex']]['param']) ? $payList[$orc['payIndex']]['param'] : '';
+        $param['getParam'] = isset($getList[$orc['getIndex']]['param']) ? $getList[$orc['getIndex']]['param'] : '';
         // 判断收款人是否匹配完毕
         if (empty($getList[$orc['getIndex']])) { // 匹配完毕, 匹配系统账户
-            $countAdmin = count($adminList);
-            $adminIndex = mt_rand(0, $countAdmin-1);
-            $param['getParam'] = isset($adminList[$adminIndex]['param'])?$adminList[$adminIndex]['param']:'';
-            $match      = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $adminList[$adminIndex]['id'], 'money' => $orc['payMoney']);
-            $matchList[]     = array_merge($match, $param);
-            $orc['payMoney'] = 0;
+            $countAdmin        = count($adminList);
+            $adminIndex        = mt_rand(0, $countAdmin - 1);
+            $param['getParam'] = isset($adminList[$adminIndex]['param']) ? $adminList[$adminIndex]['param'] : '';
+            $match             = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $adminList[$adminIndex]['id'], 'money' => $orc['payMoney']);
+            $matchList[]       = array_merge($match, $param);
+            $orc['payMoney']   = 0;
             $orc['payIndex']++;
 
             if (!empty($payList[$orc['payIndex']])) {
@@ -624,7 +625,7 @@ if (!function_exists('matchCash')) {
             $orc['getIndex']++;
             $orc['payIndex']++;
         }
-        $matchList[]     = array_merge($match, $param);
+        $matchList[] = array_merge($match, $param);
 
         if (isset($payList[$orc['payIndex']]) || ($orc['payMoney'] > 0)) {
             matchCash($payList, $getList, $adminList, $orc);
@@ -658,12 +659,12 @@ if (!function_exists('sumFieldFromTwiceArray')) {
 if (!function_exists('timeDiff')) {
     /**
      * 计算时间差(日,时分秒)
-     * @param $starttime(开始时间, 可以是时间戳,也可以是日期格式类似, endtime)
+     * @param $starttime   (开始时间, 可以是时间戳,也可以是日期格式类似, endtime)
      * @param $endtime
-     * @param string $type(day, hour, minute, second)
+     * @param string $type (day, hour, minute, second)
      * @return array|bool|mixed
      */
-    function timeDiff($starttime,$endtime,$type='')
+    function timeDiff($starttime, $endtime, $type = '')
     {
         $s = strpos($starttime, '-');
         $e = strpos($endtime, '-');
@@ -672,22 +673,24 @@ if (!function_exists('timeDiff')) {
         if ($e) $endtime = strtotime($endtime);
 
         //计算天数
-        $timediff = abs($endtime-$starttime);
-        $days = floor($timediff/86400);
+        $timediff = abs($endtime - $starttime);
+        $days     = floor($timediff / 86400);
         //计算小时数
-        $remain = $timediff%86400;
-        $hours = floor($remain/3600);
+        $remain = $timediff % 86400;
+        $hours  = floor($remain / 3600);
         //计算分钟数
-        $remain = $remain%3600;
-        $mins = floor($remain/60);
+        $remain = $remain % 3600;
+        $mins   = floor($remain / 60);
         //计算秒数
-        $secs = $remain%60;
+        $secs = $remain % 60;
 
-        $res = array("day" => $days,"hour" => $hours,"minute" => $mins,"second" => $secs);
-        if (!empty($type))  {
+        $res = array("day" => $days, "hour" => $hours, "minute" => $mins, "second" => $secs);
+        if (!empty($type)) {
             if (!in_array($type, array_keys($res))) return false;
+
             return $res[$type];
         }
+
         return $res;
     }
 }
