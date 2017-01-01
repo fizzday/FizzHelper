@@ -77,6 +77,70 @@ if (!function_exists('returnFalse')) {
     }
 }
 
+if (!function_exists('apireturn')) {
+    /**
+     * 接口json返回
+     * @param $data
+     * @param int $status 0成功, 1失败, 100验证失败
+     * @return string
+     */
+    function apireturn($data = '', $status = 0)
+    {
+        $re           = array();
+        $re['status'] = $status;
+        $re['data']   = '';
+        $re['msg']    = '';
+
+        if ($status == 0) {
+            $re['data']   = $data;
+            $re['status'] = 0;
+            $re['msg']    = 'success';
+        } else {
+            $re['msg'] = $data;
+            if (empty($data)) {
+                $re['msg'] = 'fail';
+                if ($status == 100) $re['msg'] = 'verification failed';
+            }
+        }
+//        if (empty($re['data'])) unset($re['data']);
+
+        echo json_encode($re, JSON_UNESCAPED_UNICODE);
+        die;
+    }
+}
+
+if (!function_exists('internalreturn')) {
+    /**
+     * php内部方法返回
+     * @param $data
+     * @param int $status 0成功, 1失败
+     * @return string
+     */
+    function internalreturn($data = '', $status = 0)
+    {
+        $re           = array();
+        $re['status'] = $status;
+        $re['data']   = '';
+        $re['msg']    = '';
+
+        if ($status == 0) {
+            $re['data']   = $data;
+            $re['status'] = 0;
+            $re['msg']    = 'success';
+        } else {
+            $re['msg'] = $data;
+            if (empty($data)) {
+                $re['msg'] = 'fail';
+            }
+        }
+
+//        if (empty($re['data'])) unset($re['data']);
+
+        return $re;
+        die;
+    }
+}
+
 if (!function_exists('error')) {
     /**
      * 跳转加提示 -- 错误跳转
@@ -236,70 +300,6 @@ if (!function_exists('file_set')) {
     }
 }
 
-if (!function_exists('apireturn')) {
-    /**
-     * 接口json返回
-     * @param $data
-     * @param int $status 0成功, 1失败, 100验证失败
-     * @return string
-     */
-    function apireturn($data = '', $status = 0)
-    {
-        $re           = array();
-        $re['status'] = $status;
-        $re['data']   = '';
-        $re['msg']    = '';
-
-        if ($status == 0) {
-            $re['data']   = $data;
-            $re['status'] = 0;
-            $re['msg']    = 'success';
-        } else {
-            $re['msg'] = $data;
-            if (empty($data)) {
-                $re['msg'] = 'fail';
-                if ($status == 100) $re['msg'] = 'verification failed';
-            }
-        }
-//        if (empty($re['data'])) unset($re['data']);
-
-        echo json_encode($re, JSON_UNESCAPED_UNICODE);
-        die;
-    }
-}
-
-if (!function_exists('internalreturn')) {
-    /**
-     * php内部方法返回
-     * @param $data
-     * @param int $status 0成功, 1失败
-     * @return string
-     */
-    function internalreturn($data = '', $status = 0)
-    {
-        $re           = array();
-        $re['status'] = $status;
-        $re['data']   = '';
-        $re['msg']    = '';
-
-        if ($status == 0) {
-            $re['data']   = $data;
-            $re['status'] = 0;
-            $re['msg']    = 'success';
-        } else {
-            $re['msg'] = $data;
-            if (empty($data)) {
-                $re['msg'] = 'fail';
-            }
-        }
-
-//        if (empty($re['data'])) unset($re['data']);
-
-        return $re;
-        die;
-    }
-}
-
 if (!function_exists('mbSubstr')) {
     /**
      * 字符串截取，支持中文和其他编码
@@ -385,6 +385,39 @@ if (!function_exists('curlPost')) {
     }
 }
 
+if (!function_exists('curlUpload')) {
+    /**
+     * curl 上传文件
+     * @param string $url   上传地址
+     * @param array $data   上传的其他数据
+     * @param string $file  上传的图片
+     * @param string $fileKey   图片的 key 值, 相当于form下input的name值
+     */
+    function curlUpload($url = '', $data = array(), $file = '', $fileKey = '')
+    {
+        if (empty($fileKey)) $fileKey = 'files';
+
+        if (!empty($file)) {
+            if (is_array($file)) {
+                foreach ($file as $key => $value) {
+                    $data[$fileKey . '[' . $key . ']'] = new \CURLFile(realpath($value));
+                }
+            } else {
+                $data[$fileKey . '[0]'] = new \CURLFile(realpath($file));
+            }
+        }
+
+        $request = curl_init($url);
+
+        curl_setopt($request, CURLOPT_POST, true);
+
+        curl_setopt($request, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+        echo curl_exec($request);
+        curl_close($request);
+    }
+}
+
 if (!function_exists('sendPost')) {
     /**
      * 发送post请求
@@ -438,45 +471,6 @@ if (!function_exists('sendGet')) {
     }
 }
 
-if (!function_exists('conf')) {
-    function conf($key = '', $defaultValue = '')
-    {
-        $conf               = array();
-        $conf['levelNum']   = 9;
-        $conf['percentAll'] = array(
-            array('level' => 1, 'percent' => 0.1),
-            array('level' => 2, 'percent' => 0.1),
-            array('level' => 3, 'percent' => 0.1),
-            array('level' => 4, 'percent' => 0.1),
-            array('level' => 5, 'percent' => 0.1),
-            array('level' => 6, 'percent' => 0.1),
-            array('level' => 7, 'percent' => 0.1),
-            array('level' => 8, 'percent' => 0.1),
-            array('level' => 9, 'percent' => 0.1)
-        );
-
-        if (empty($key)) {
-            if (empty($defaultValue)) return $conf;
-
-            return $defaultValue;
-        }
-
-        // 判断key是否是多级的
-        if (strpos($key, '.') > 0) {
-            $keyArr = explode('.', $key);
-
-            static $resConf = array();
-            foreach ($keyArr as $v) {
-                $resConf = $conf[$v];
-            }
-
-            return $resConf;
-        }
-
-        return $conf[$key];
-    }
-}
-
 if (!function_exists('isMobile')) {
     /**
      * 判断是否是手机端
@@ -502,157 +496,6 @@ if (!function_exists('isMobile')) {
         }
 
         return $is_mobile;
-    }
-}
-
-if (!function_exists('curlUpload')) {
-    /**
-     * curl 上传文件
-     * @param string $url
-     * @param array $data
-     * @param string $file
-     * @param string $fileKey
-     */
-    function curlUpload($url = '', $data = array(), $file = '', $fileKey = '')
-    {
-        if (empty($fileKey)) $fileKey = 'files';
-
-        if (!empty($file)) {
-            if (is_array($file)) {
-                foreach ($file as $key => $value) {
-                    $data[$fileKey . '[' . $key . ']'] = new \CURLFile(realpath($value));
-                }
-            } else {
-                $data[$fileKey . '[0]'] = new \CURLFile(realpath($file));
-            }
-        }
-
-        $request = curl_init($url);
-
-        curl_setopt($request, CURLOPT_POST, true);
-
-        curl_setopt($request, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-        echo curl_exec($request);
-        curl_close($request);
-    }
-}
-
-if (!function_exists('matchCash')) {
-    /**
-     * 互助匹配
-     * 数据示例:
-     * id为当前匹配的排单数据id, money为当前单的金额, param为其他参数, 可以是一个参数(如:用户uid),可以是多个(如:array('uid'=>3,'mobile'=>13212341234))
-     *
-     * 打款人列表,
-     * // $payList[] = array('id'=>11, 'money'=>200, 'param'=>1);
-     * // $payList[] = array('id'=>12, 'money'=>200, 'param'=>1);
-     * // $payList[] = array('id'=>13, 'money'=>500, 'param'=>1);
-     * 收款人列表
-     * // $getList[] = array('id'=>21, 'money'=>100, 'param'=>1);
-     * // $getList[] = array('id'=>22, 'money'=>200, 'param'=>1);
-     * // $getList[] = array('id'=>23, 'money'=>200, 'param'=>1);
-     * 系统匹配人员列表, 主要考虑匹配剩余的人, 要匹配完全, 必须要有多余接收账户
-     * // $adminList[] = array('id'=>31, 'param'=>1);
-     * // $adminList[] = array('id'=>32, 'param'=>1);
-     * // $adminList[] = array('id'=>33, 'param'=>1);
-     *
-     * @param $payList      提供帮助列表
-     * @param $getList      获取帮助列表
-     * @param $adminList    系统账号列表
-     * @param array $orc    缓存容器
-     * @return array
-     */
-    function matchCash($payList, $getList, $adminList, $orc = array('getIndex' => 0, 'getMoney' => 0, 'payIndex' => 0, 'payMoney' => 0))
-    {
-        if (empty($payList) || empty($adminList)) dd(internalreturn('paylist & adminlist can not empty', 1));
-        static $matchList = array();
-
-        // 将操作的金额放入容器
-        if (!$orc['payMoney']) $orc['payMoney'] = isset($payList[$orc['payIndex']]['money']) ? $payList[$orc['payIndex']]['money'] : 0;
-        if (!$orc['getMoney']) $orc['getMoney'] = isset($getList[$orc['getIndex']]['money']) ? $getList[$orc['getIndex']]['money'] : 0;
-
-        // 匹配结果
-        $param             = array();
-        $param['payParam'] = isset($payList[$orc['payIndex']]['param']) ? $payList[$orc['payIndex']]['param'] : '';
-        $param['getParam'] = isset($getList[$orc['getIndex']]['param']) ? $getList[$orc['getIndex']]['param'] : '';
-        // 判断收款人是否匹配完毕
-        if (empty($getList[$orc['getIndex']])) { // 匹配完毕, 匹配系统账户
-            $countAdmin        = count($adminList);
-            $adminIndex        = mt_rand(0, $countAdmin - 1);
-            $param['getParam'] = isset($adminList[$adminIndex]['param']) ? $adminList[$adminIndex]['param'] : '';
-            $match             = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $adminList[$adminIndex]['id'], 'money' => $orc['payMoney']);
-            $matchList[]       = array_merge($match, $param);
-            $orc['payMoney']   = 0;
-            $orc['payIndex']++;
-
-            if (!empty($payList[$orc['payIndex']])) {
-                matchCash($payList, $getList, $adminList, $orc);
-            }
-
-            return $matchList;
-        }
-
-        // 判断提供帮助的金额是否大于将要接收帮助的人的提现金额
-        $payListLeave = array_slice($payList, ($orc['payIndex']));
-        $paySumMoney  = sumFieldFromTwiceArray('money', $payListLeave) + $orc['payMoney'];
-
-        if ($paySumMoney < $getList[$orc['getIndex']]['money']) {
-            $getList = array();
-            matchCash($payList, $getList, $adminList, $orc);
-
-            return $matchList;
-        }
-
-        $minus = $orc['payMoney'] - $orc['getMoney'];
-        if ($minus > 0) {   // 打款的有剩余
-            $money_real      = $orc['getMoney'];    // 实际订单金额
-            $match           = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $getList[$orc['getIndex']]['id'], 'money' => $money_real);
-            $orc['payMoney'] = $minus;         // 打款有剩余
-            $orc['getMoney'] = 0;              // 收款重置为0
-            $orc['getIndex']++;
-        } elseif ($minus < 0) {
-            $money_real      = $orc['payMoney'];    // 实际订单金额
-            $match           = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $getList[$orc['getIndex']]['id'], 'money' => $money_real);
-            $orc['getMoney'] = abs($minus);         // 收款有剩余
-            $orc['payMoney'] = 0;              // 打款重置为0
-            $orc['payIndex']++;
-        } else {
-            $money_real      = $orc['payMoney'];
-            $match           = array('payid' => $payList[$orc['payIndex']]['id'], 'getid' => $getList[$orc['getIndex']]['id'], 'money' => $money_real);
-            $orc['getMoney'] = 0;
-            $orc['payMoney'] = 0;
-            $orc['getIndex']++;
-            $orc['payIndex']++;
-        }
-        $matchList[] = array_merge($match, $param);
-
-        if (isset($payList[$orc['payIndex']]) || ($orc['payMoney'] > 0)) {
-            matchCash($payList, $getList, $adminList, $orc);
-        }
-
-        return $matchList;
-    }
-}
-
-if (!function_exists('sumFieldFromTwiceArray')) {
-    /**
-     * 获取二维数组中某个字段的和
-     * @param $field    字段
-     * @param $arr      要获取的二维数组
-     * @return int
-     */
-    function sumFieldFromTwiceArray($field, $arr)
-    {
-        $str = 0;
-        $arr = json_decode(json_encode($arr), true);
-        foreach ($arr as $k => $v) {
-            if (!empty($v[$field])) {
-                $str += $v[$field];
-            }
-        }
-
-        return $str;
     }
 }
 
@@ -692,6 +535,65 @@ if (!function_exists('timeDiff')) {
         }
 
         return $res;
+    }
+}
+
+if (!function_exists('toInfiniteTree')) {
+    /**
+     * 把返回的数据集转换成无限级分类Tree
+     * @param array $list 要转换的数据集
+     * @param string $pid parent标记字段
+     * @param string $level level标记字段
+     * @return array
+     * @author 麦当苗儿 <zuojiazi@vip.qq.com>
+     */
+    function toInfiniteTree($list, $pk='id', $pid = 'pid', $child = '_child', $root = 0) {
+        // 创建Tree
+        $tree = array();
+        if(is_array($list)) {
+            // 创建基于主键的数组引用
+            $refer = array();
+            foreach ($list as $key => $data) {
+                $refer[$data[$pk]] =& $list[$key];
+            }
+
+            foreach ($list as $key => $data) {
+                // 判断是否存在parent
+                $parentId =  $data[$pid];
+                if ($root == $parentId) {
+                    $tree[] =& $list[$key];
+                }else{
+                    if (isset($refer[$parentId])) {
+                        $parent =& $refer[$parentId];
+                        $parent[$child][] =& $list[$key];
+                    }
+                }
+            }
+        }
+        return $tree;
+    }
+}
+
+if (!function_exists('showInfiniteTree')) {
+    /**
+     * 展示无限级分类为树状结构(根据情况整改显示的html)
+     * @param $data             数据列表
+     * @param string $name      显示的key名字
+     * @param string $child     子级分类的key
+     * @param int $deep         当前层级深度
+     * @return string
+     */
+    function showInfiniteTree($data, $name='name', $child='_child', $deep=0)
+    {
+        static $html = '';
+        if (is_array($data)) {
+            foreach ($data as $v) {
+                $html .= str_repeat('|--', $deep).$v[$name].PHP_EOL;
+                if (!empty($v[$child]))  showInfiniteTree($v[$child], $name, $child, $deep+1);
+            }
+        }
+
+        return $html;
     }
 }
 
