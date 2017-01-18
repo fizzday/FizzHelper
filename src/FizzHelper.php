@@ -45,99 +45,59 @@ if (!function_exists('vd')) {
     }
 }
 
-if (!function_exists('returnTrue')) {
+if (!function_exists('successReturn')) {
     /**
-     * 类的方法返回数据(成功返回)
-     * @param array $data
+     * 带状态值的数据返回(成功返回)
+     * @param string $data
+     * @param int $status
      * @return array
      */
-    function returnTrue($data = [])
-    {
-        $data['status'] = 1;
-        $data['data']   = $data;
-        $data['msg']    = 'success';
-
-        return $data;
-    }
-}
-
-if (!function_exists('returnFalse')) {
-    /**
-     * 类的方法返回数据(失败返回)
-     * @param array $data
-     * @return array
-     */
-    function returnFalse($data = [])
-    {
-        $data['status'] = 0;
-        $data['data']   = $data;
-        $data['msg']    = 'fail';
-
-        return $data;
-    }
-}
-
-if (!function_exists('apireturn')) {
-    /**
-     * 接口json返回
-     * @param $data
-     * @param int $status 0成功, 1失败, 100验证失败
-     * @return string
-     */
-    function apireturn($data = '', $status = 0)
+    function successReturn($data = '', $status = 200)
     {
         $re           = array();
         $re['status'] = $status;
-        $re['data']   = '';
-        $re['msg']    = '';
-
-        if ($status == 0) {
-            $re['data']   = $data;
-            $re['status'] = 0;
-            $re['msg']    = 'success';
-        } else {
-            $re['msg'] = $data;
-            if (empty($data)) {
-                $re['msg'] = 'fail';
-                if ($status == 100) $re['msg'] = 'verification failed';
-            }
-        }
-//        if (empty($re['data'])) unset($re['data']);
-
-        echo json_encode($re, JSON_UNESCAPED_UNICODE);
-        die;
-    }
-}
-
-if (!function_exists('internalreturn')) {
-    /**
-     * php内部方法返回
-     * @param $data
-     * @param int $status 0成功, 1失败
-     * @return string
-     */
-    function internalreturn($data = '', $status = 0)
-    {
-        $re           = array();
-        $re['status'] = $status;
-        $re['data']   = '';
-        $re['msg']    = '';
-
-        if ($status == 0) {
-            $re['data']   = $data;
-            $re['status'] = 0;
-            $re['msg']    = 'success';
-        } else {
-            $re['msg'] = $data;
-            if (empty($data)) {
-                $re['msg'] = 'fail';
-            }
-        }
-
-//        if (empty($re['data'])) unset($re['data']);
+        $re['data']   = $data;
+        $re['msg']    = 'success';
 
         return $re;
-        die;
+    }
+}
+
+if (!function_exists('failReturn')) {
+    /**
+     * 带状态值的数据返回(失败返回)
+     * @param string $data
+     * @param int $status
+     * @return array
+     */
+    function failReturn($data = '', $status = 201)
+    {
+        if (!$data) $data = getApiStatus($status);
+        $re           = array();
+        $re['status'] = $status;
+        $re['data']   = $data;
+        $re['msg']    = 'fail';
+
+        return $re;
+    }
+}
+
+if (!function_exists('getApiStatus')) {
+    function getApiStatus($code = '')
+    {
+        $status      = array();
+        $status[200] = 'success';
+        $status[201] = 'fail';
+        $status[202] = 'token认证失败';
+        $status[203] = '相关参数不能为空';
+        $status[204] = '非法请求';
+        $status[205] = '获取数据失败';
+        $status[206] = '暂无数据';
+
+        if (empty($code)) return $status;
+        if (!in_array($code, array_keys($status))) return false;
+
+        return $status[$code];
     }
 }
 
@@ -191,7 +151,7 @@ if (!function_exists('show_msg')) {
     {
         $text =
             <<<EOT
-    <html><head><title>{$msg}</title><style>html,body{height:100%}body{margin:0;padding:0;width:100%;display:table;font-weight:100;font-family:Lato}.container{text-align:center;display:table-cell;vertical-align:middle}.content{text-align:center;display:inline-block}.title{font-size:4rem}</style></head><body><div class="container"><div class="content"><div class="title">{$msg}</div></div></div></body></html>
+        <html><head><title>{$msg}</title><style>html,body{height:100%}body{margin:0;padding:0;width:100%;display:table;font-weight:100;font-family:Lato}.container{text-align:center;display:table-cell;vertical-align:middle}.content{text-align:center;display:inline-block}.title{font-size:4rem}</style></head><body><div class="container"><div class="content"><div class="title">{$msg}</div></div></div></body></html>
 EOT;
         if ($return) return $text;
 
@@ -359,7 +319,7 @@ if (!function_exists('shortenSinaUrl')) {
     }
 }
 
-if (!function_exists('curlPost')) {
+if (!function_exists('curl_post')) {
     /**
      * curl发送post请求
      * @param string $url
@@ -388,10 +348,10 @@ if (!function_exists('curlPost')) {
 if (!function_exists('curlUpload')) {
     /**
      * curl 上传文件
-     * @param string $url   上传地址
-     * @param array $data   上传的其他数据
-     * @param string $file  上传的图片
-     * @param string $fileKey   图片的 key 值, 相当于form下input的name值
+     * @param string $url     上传地址
+     * @param array $data     上传的其他数据
+     * @param string $file    上传的图片
+     * @param string $fileKey 图片的 key 值, 相当于form下input的name值
      */
     function curlUpload($url = '', $data = array(), $file = '', $fileKey = '')
     {
@@ -425,7 +385,7 @@ if (!function_exists('sendPost')) {
      * @param array $post_data post键值对数据
      * @return string
      */
-    function send_post($url, $post_data)
+    function send_post($url, $post_data, $timeout = 900)
     {
 
         $postdata = http_build_query($post_data);
@@ -434,7 +394,7 @@ if (!function_exists('sendPost')) {
                 'method'  => 'POST',
                 'header'  => 'Content-type:application/x-www-form-urlencoded',
                 'content' => $postdata,
-                'timeout' => 15 * 60 // 超时时间（单位:s）
+                'timeout' => $timeout // 超时时间（单位:s）
             )
         );
         $context  = stream_context_create($options);
@@ -451,7 +411,7 @@ if (!function_exists('sendGet')) {
      * @param array $get_data post键值对数据
      * @return string
      */
-    function send_get($url, $get_data = '')
+    function send_get($url, $get_data = '', $timeout = 5)
     {
 
         $postdata = http_build_query($get_data);
@@ -461,7 +421,7 @@ if (!function_exists('sendGet')) {
                 'method'  => 'GET',
                 'header'  => 'Content-type:application/x-www-form-urlencoded',
                 'content' => $postdata,
-                'timeout' => 5 // 超时时间（单位:s）
+                'timeout' => $timeout // 超时时间（单位:s）
             )
         );
         $context = stream_context_create($options);
@@ -541,16 +501,17 @@ if (!function_exists('timeDiff')) {
 if (!function_exists('toInfiniteTree')) {
     /**
      * 把返回的数据集转换成无限级分类Tree
-     * @param array $list 要转换的数据集
-     * @param string $pid parent标记字段
+     * @param array $list   要转换的数据集
+     * @param string $pid   parent标记字段
      * @param string $level level标记字段
      * @return array
      * @author 麦当苗儿 <zuojiazi@vip.qq.com>
      */
-    function toInfiniteTree($list, $pk='id', $pid = 'pid', $child = '_child', $root = 0) {
+    function toInfiniteTree($list, $pk = 'id', $pid = 'pid', $child = '_child', $root = 0)
+    {
         // 创建Tree
         $tree = array();
-        if(is_array($list)) {
+        if (is_array($list)) {
             // 创建基于主键的数组引用
             $refer = array();
             foreach ($list as $key => $data) {
@@ -559,17 +520,18 @@ if (!function_exists('toInfiniteTree')) {
 
             foreach ($list as $key => $data) {
                 // 判断是否存在parent
-                $parentId =  $data[$pid];
+                $parentId = $data[$pid];
                 if ($root == $parentId) {
                     $tree[] =& $list[$key];
-                }else{
+                } else {
                     if (isset($refer[$parentId])) {
-                        $parent =& $refer[$parentId];
+                        $parent           =& $refer[$parentId];
                         $parent[$child][] =& $list[$key];
                     }
                 }
             }
         }
+
         return $tree;
     }
 }
@@ -583,17 +545,54 @@ if (!function_exists('showInfiniteTree')) {
      * @param int $deep         当前层级深度
      * @return string
      */
-    function showInfiniteTree($data, $name='name', $child='_child', $deep=0)
+    function showInfiniteTree($data, $name = 'name', $child = '_child', $deep = 0)
     {
         static $html = '';
         if (is_array($data)) {
             foreach ($data as $v) {
-                $html .= str_repeat('|--', $deep).$v[$name].PHP_EOL;
-                if (!empty($v[$child]))  showInfiniteTree($v[$child], $name, $child, $deep+1);
+                $html .= str_repeat('|--', $deep) . $v[$name] . PHP_EOL;
+                if (!empty($v[$child])) showInfiniteTree($v[$child], $name, $child, $deep + 1);
             }
         }
 
         return $html;
+    }
+}
+
+if (!function_exists('getSquarePoint')) {
+    /**
+     *计算某个经纬度的周围某段距离的正方形的四个点
+     *
+     * @param lng      float 经度
+     * @param lat      float 纬度
+     * @param distance float 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
+     * @return array 正方形的四个点的经纬度坐标
+     */
+    function getSquarePoint($lng, $lat, $distance = 0.5)
+    {
+
+        $earth_radius = 6371;//地球半径，平均半径为6371km
+        $dlng         = 2 * asin(sin($distance / (2 * $earth_radius)) / cos(deg2rad($lat)));
+        $dlng         = rad2deg($dlng);
+
+        $dlat = $distance / $earth_radius;
+        $dlat = rad2deg($dlat);
+
+        $squares = array(
+            'left-top'     => array('lat' => $lat + $dlat, 'lng' => $lng - $dlng),
+            'right-top'    => array('lat' => $lat + $dlat, 'lng' => $lng + $dlng),
+            'left-bottom'  => array('lat' => $lat - $dlat, 'lng' => $lng - $dlng),
+            'right-bottom' => array('lat' => $lat - $dlat, 'lng' => $lng + $dlng)
+        );
+
+        return $squares;
+        //使用此函数计算得到结果后，带入sql查询。
+//    $info_sql = "select id,locateinfo,lat,lng from `lbs_info`
+//         where lat<>0
+//         and lat>{$squares['left-bottom']['lat']}
+//         and lat<{$squares['right-top']['lat']}
+//         and lng>{$squares['left-bottom']['lng']}
+//         and lng<{$squares['right-top']['lng']} ";
     }
 }
 
