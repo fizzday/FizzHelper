@@ -18,32 +18,6 @@
  * @v($data) 格式化打印, 不终止
  */
 
-if (!function_exists('vv')) {
-    /**
-     * 格式化打印, 不终止
-     * @param string $data
-     */
-    function vv($data = '')
-    {
-        echo "<pre>";
-        print_r($data);
-        echo "</pre>";
-    }
-}
-
-if (!function_exists('vd')) {
-    /**
-     * 格式化打印, 并终止
-     * @param string $data
-     */
-    function vd($data = '')
-    {
-        echo "<pre>";
-        print_r($data);
-        echo "</pre>";
-        die;
-    }
-}
 
 if (!function_exists('successReturn')) {
     /**
@@ -167,7 +141,7 @@ if (!function_exists('getCode')) {
      * @param array $conf ['number', 'letter', 'upper'] 或者 单个的如 'num'
      * @return string       期望长度的返回值
      */
-    function getCode($len = 10, $conf = ['number', 'letter'])
+    function getCode($len = 10, $conf = ['number', 'letter'], $start_with_letter = false)
     {
         // 源字符串, 去除了数字 1,4,0 ; 去除了字母 i,l,o  易混淆的字符
         $origin_str['number'] = "2356789";
@@ -175,7 +149,13 @@ if (!function_exists('getCode')) {
         $origin_str['upper']  = "ABCDEFGHJKMNPQRSTUVWXYZ";
 
         // 判断 $conf 类型
-        if (!empty($conf) && !is_array($conf)) $conf = array($conf);
+        if (!empty($conf)) {
+            if (!is_array($conf)) $conf = array($conf);
+        } else {
+            $conf = ['number', 'letter'];
+        }
+
+        if (empty($len)) $len = 10;
 
         // 拿到指定类型的所有字符串
         $str_all = array_reduce($conf, function ($res, $item) use ($origin_str) {
@@ -186,9 +166,30 @@ if (!function_exists('getCode')) {
         $str_res       = str_shuffle($str_all);
         $str_res_count = strlen($str_res);
 
+        // 是否是以字母开头
+        $startStr = '';
+        if ($start_with_letter) {
+            if (is_numeric($start_with_letter)) {
+                // 是否只是小写字母, 或只是大写字母
+                if (($conf == 'letter') || ($conf == 'upper') || ($conf == 'number') || ($conf == ['letter']) || ($conf == ['number']) || ($conf == ['letter'])) {
+                    if ($start_with_letter > $len) $start_with_letter = $len;
+                    for ($i = 0; $i < $start_with_letter; $i++) {
+                        $index = mt_rand(0, $str_res_count - 1);
+                        $startStr .= $str_res[$index];
+                    }
+                } else {
+                    // 以大写字母开头
+                    $startStr .= $origin_str['upper'][mt_rand(0, strlen($origin_str['upper']) - 1)];
+                    $startStr .= $origin_str['upper'][mt_rand(0, strlen($origin_str['upper']) - 1)];
+                }
+            } else {
+                $startStr .= $start_with_letter;
+                $start_with_letter = strlen($start_with_letter);
+            }
+        }
         // 根据长度取对应的数据
-        $str = '';
-        for ($i = 0; $i < $len; $i++) {
+        $str = $startStr;
+        for ($i = 0; $i < ($len-$start_with_letter); $i++) {
             $index = mt_rand(0, $str_res_count - 1);
             $str .= $str_res[$index];
         }
@@ -378,7 +379,7 @@ if (!function_exists('curlUpload')) {
     }
 }
 
-if (!function_exists('sendPost')) {
+if (!function_exists('send_post')) {
     /**
      * 发送post请求
      * @param string $url      请求地址
@@ -404,7 +405,7 @@ if (!function_exists('sendPost')) {
     }
 }
 
-if (!function_exists('sendGet')) {
+if (!function_exists('send_get')) {
     /**
      * 发送 get 请求
      * @param string $url     请求地址
@@ -599,5 +600,7 @@ if (!function_exists('getSquarePoint')) {
 if (!function_exists('returnFalse')) {
 
 }
+
+//echo getCode('',['number'],'22');
 
 
