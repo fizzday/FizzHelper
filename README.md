@@ -57,24 +57,13 @@ echo getCode(6, ['upper', 'letter']); // kUPsFz
  
  ---
  
-- vv(), vd() 格式化打印, 源码如下:  
+- dd() 格式化打印, 源码如下:  
 ```
-    /**
-     * 格式化打印, 不终止
-     * @param string $data
-     */
-    function vv($data = '')
-    {
-        echo "<pre>";
-        print_r($data);
-        echo "</pre>";
-    }
-
     /**
      * 格式化打印, 并终止
      * @param string $data
      */
-    function vd($data = '')
+    function dd($data = '')
     {
         echo "<pre>";
         print_r($data);
@@ -82,6 +71,6 @@ echo getCode(6, ['upper', 'letter']); // kUPsFz
         die;
     }
 ```
-一目了然, `vv()`格式化打印, 继续向下执行; `vd()`格式化打印并终止, 这个两个函数的意义就是把我们从 `echo "<pre>"` 和 `print_r()`中解脱出来
+一目了然, `dd()`格式化打印并终止, 这个两个函数的意义就是把我们从 `echo "<pre>"` 和 `print_r()`中解脱出来
 
 类似的还有很多, 平常一点点来收集整理
