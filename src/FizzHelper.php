@@ -1,79 +1,4 @@
 <?php
-/**
- * 常用函数结合
- *
- * @apireturn($data = '', $status = "0000", $arr = '') api 返回json
- * @d($data) 格式化打印, 并终止
- * @error($text = "", $url = '', $time = 2) 跳转加提示 -- 错误跳转
- * @file_set($file, $data, $mode = 'a') 指针写入文件
- * @getCode($len = 10, $conf = ['number', 'letter']) 获取随机字符串 (默认随机字母或数字, 如果 $letter 和 $num 都为 true, 则是字母开头)
- * @getTextareaRealStr($textareaStr = "") 获取文本框的 文本 兼容字符串
- * @mbSubstr($str, $start=0, $length, $charset="utf-8", $suffix=true) 字符串截取，支持中文和其他编码
- * @returnTrue($data = []) 类的方法返回数据(成功返回)
- * @returnTrue($data = []) 类的方法返回数据(失败返回)
- * @shortenSinaUrl($long_url) 新浪长地址转短地址接口
- * @show_msg($msg = null, $return = false) 展示信息到页面
- * @start_with($word, $str) 是否以某个字符串开头
- * @success($text = "", $url = '', $time = 1) 跳转加提示 -- 成功跳转
- * @v($data) 格式化打印, 不终止
- */
-
-
-if (!function_exists('successReturn')) {
-    /**
-     * 带状态值的数据返回(成功返回)
-     * @param string $data
-     * @param int $status
-     * @return array
-     */
-    function successReturn($data = '', $status = 200)
-    {
-        $re           = array();
-        $re['status'] = $status;
-        $re['data']   = $data;
-        $re['msg']    = 'success';
-
-        return $re;
-    }
-}
-
-if (!function_exists('failReturn')) {
-    /**
-     * 带状态值的数据返回(失败返回)
-     * @param string $data
-     * @param int $status
-     * @return array
-     */
-    function failReturn($data = '', $status = 201)
-    {
-        if (!$data) $data = getApiStatus($status);
-        $re           = array();
-        $re['status'] = $status;
-        $re['data']   = $data;
-        $re['msg']    = 'fail';
-
-        return $re;
-    }
-}
-
-if (!function_exists('getApiStatus')) {
-    function getApiStatus($code = '')
-    {
-        $status      = array();
-        $status[200] = 'success';
-        $status[201] = 'fail';
-        $status[202] = 'token认证失败';
-        $status[203] = '相关参数不能为空';
-        $status[204] = '非法请求';
-        $status[205] = '获取数据失败';
-        $status[206] = '暂无数据';
-
-        if (empty($code)) return $status;
-        if (!in_array($code, array_keys($status))) return false;
-
-        return $status[$code];
-    }
-}
 
 if (!function_exists('error')) {
     /**
@@ -106,7 +31,6 @@ if (!function_exists('success')) {
         if (empty($text)) $text = '操作成功';
         if (empty($url)) {
             $url = $_SERVER["HTTP_REFERER"];
-//            $url = '/';
         }
         echo show_msg($text, true);
         echo '<META HTTP-EQUIV="refresh" CONTENT="' . $time . '; URL=' . $url . '">';
@@ -117,7 +41,7 @@ if (!function_exists('success')) {
 if (!function_exists('show_msg')) {
     /**
      * 展示信息到页面
-     * @param null $msg    展示的信息
+     * @param null $msg 展示的信息
      * @param bool $return 是否作为内容返回
      * @return string
      */
@@ -125,7 +49,7 @@ if (!function_exists('show_msg')) {
     {
         $text =
             <<<EOT
-        <html><head><title>{$msg}</title><style>html,body{height:100%}body{margin:0;padding:0;width:100%;display:table;font-weight:100;font-family:Lato}.container{text-align:center;display:table-cell;vertical-align:middle}.content{text-align:center;display:inline-block}.title{font-size:4rem}</style></head><body><div class="container"><div class="content"><div class="title">{$msg}</div></div></div></body></html>
+    <html><head><title>{$msg}</title><style>html,body{height:100%}body{margin:0;padding:0;width:100%;display:table;font-weight:100;font-family:Lato}.container{text-align:center;display:table-cell;vertical-align:middle}.content{text-align:center;display:inline-block}.title{font-size:4rem}</style></head><body><div class="container"><div class="content"><div class="title">{$msg}</div></div></div></body></html>
 EOT;
         if ($return) return $text;
 
@@ -136,26 +60,20 @@ EOT;
 
 if (!function_exists('getCode')) {
     /**
-     * 获取随机字符串 (默认随机字母或数字, 如果 $letter 和 $num 都为 true, 则是字母开头)
-     * @param int $len    长度
-     * @param array $conf ['number', 'letter', 'upper'] 或者 单个的如 'num'
+     * 获取随机字符串 (默认随机字母或数字, 如果 $letter 和 $number 都为 true, 则是字母开头)
+     * @param int $len 长度
+     * @param array $conf ['number', 'letter', 'upper'] 或者 单个的如 'number'
      * @return string       期望长度的返回值
      */
-    function getCode($len = 10, $conf = ['number', 'letter'], $start_with_letter = false)
+    function getCode($len = 10, $conf = ['number', 'letter'])
     {
         // 源字符串, 去除了数字 1,4,0 ; 去除了字母 i,l,o  易混淆的字符
         $origin_str['number'] = "2356789";
         $origin_str['letter'] = "abcdefghjkmnpqrstuvwxyz";
-        $origin_str['upper']  = "ABCDEFGHJKMNPQRSTUVWXYZ";
+        $origin_str['upper'] = "ABCDEFGHJKMNPQRSTUVWXYZ";
 
         // 判断 $conf 类型
-        if (!empty($conf)) {
-            if (!is_array($conf)) $conf = array($conf);
-        } else {
-            $conf = ['number', 'letter'];
-        }
-
-        if (empty($len)) $len = 10;
+        if (!empty($conf) && !is_array($conf)) $conf = array($conf);
 
         // 拿到指定类型的所有字符串
         $str_all = array_reduce($conf, function ($res, $item) use ($origin_str) {
@@ -163,56 +81,17 @@ if (!function_exists('getCode')) {
         });
 
         // 打乱并截取对应长度的字符串
-        $str_res       = str_shuffle($str_all);
+        $str_res = str_shuffle($str_all);
         $str_res_count = strlen($str_res);
 
-        // 是否是以字母开头
-        $startStr = '';
-        if ($start_with_letter) {
-            if (is_numeric($start_with_letter)) {
-                // 是否只是小写字母, 或只是大写字母
-                if (($conf == 'letter') || ($conf == 'upper') || ($conf == 'number') || ($conf == ['letter']) || ($conf == ['number']) || ($conf == ['letter'])) {
-                    if ($start_with_letter > $len) $start_with_letter = $len;
-                    for ($i = 0; $i < $start_with_letter; $i++) {
-                        $index = mt_rand(0, $str_res_count - 1);
-                        $startStr .= $str_res[$index];
-                    }
-                } else {
-                    // 以大写字母开头
-                    $startStr .= $origin_str['upper'][mt_rand(0, strlen($origin_str['upper']) - 1)];
-                    $startStr .= $origin_str['upper'][mt_rand(0, strlen($origin_str['upper']) - 1)];
-                }
-            } else {
-                $startStr .= $start_with_letter;
-                $start_with_letter = strlen($start_with_letter);
-            }
-        }
         // 根据长度取对应的数据
-        $str = $startStr;
-        for ($i = 0; $i < ($len-$start_with_letter); $i++) {
+        $str = '';
+        for ($i = 0; $i < $len; $i++) {
             $index = mt_rand(0, $str_res_count - 1);
             $str .= $str_res[$index];
         }
 
         return $str;
-    }
-}
-
-if (!function_exists('start_with')) {
-    /**
-     * 是否以某个字符串开头
-     * @param  string $word 原生字符串, 如: withName
-     * @param  string $str  标识字符串, 如: with
-     * @return boolean      返回判断结果
-     */
-    function start_with($word, $str)
-    {
-        if (!empty($word) && !empty($str)) {
-            $len = strlen(trim($str));
-            if (substr($word, 0, $len) == $str) return true;
-        }
-
-        return false;
     }
 }
 
@@ -241,15 +120,13 @@ if (!function_exists('file_set')) {
      * 指针写入文件
      * @param unknown $name 文件名
      * @param unknown $data 内容
-     * @param string $mode  打开方式
+     * @param string $mode 打开方式
      */
     function file_set($file, $data, $mode = 'a')
     {
-        if (!$file || !$data) return false;
+        $dir = (dirname($file));
 
-//    $dir = dirname($file);
-//
-//    if (!is_dir($dir)) mkdir($dir, 0777, true);
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
 
         $fp = fopen($file, $mode);
         fwrite($fp, $data);
@@ -261,72 +138,13 @@ if (!function_exists('file_set')) {
     }
 }
 
-if (!function_exists('mbSubstr')) {
-    /**
-     * 字符串截取，支持中文和其他编码
-     * @static
-     * @access public
-     * @param string $str     需要转换的字符串
-     * @param string $start   开始位置
-     * @param string $length  截取长度
-     * @param string $charset 编码格式
-     * @param string $suffix  截断显示字符
-     * @return string
-     */
-    function mbSubstr($str, $start = 0, $length, $charset = "utf-8", $suffix = true)
-    {
-        if (function_exists("mb_substr"))
-            $slice = mb_substr($str, $start, $length, $charset);
-        elseif (function_exists('iconv_substr')) {
-            $slice = iconv_substr($str, $start, $length, $charset);
-            if (false === $slice) {
-                $slice = '';
-            }
-        } else {
-            $re['utf-8']  = "/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/";
-            $re['gb2312'] = "/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/";
-            $re['gbk']    = "/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/";
-            $re['big5']   = "/[\x01-\x7f]|[\x81-\xfe]([\x40-\x7e]|\xa1-\xfe])/";
-            preg_match_all($re[$charset], $str, $match);
-            $slice = join("", array_slice($match[0], $start, $length));
-        }
-
-        return $suffix ? $slice . '...' : $slice;
-    }
-}
-
-if (!function_exists('shortenSinaUrl')) {
-    /**
-     * 新浪长地址转短地址接口
-     * @param $long_url
-     * @return mixed
-     */
-    function shortenSinaUrl($long_url)
-    {
-        $apiKey   = '1681459862';//这里是你申请的应用的API KEY，随便写个应用名就会自动分配给你
-        $long_url = urlencode($long_url);
-        $apiUrl   = 'http://api.t.sina.com.cn/short_url/shorten.json?source=' . $apiKey . '&url_long=' . $long_url;
-        $curlObj  = curl_init();
-        curl_setopt($curlObj, CURLOPT_URL, $apiUrl);
-        curl_setopt($curlObj, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curlObj, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curlObj, CURLOPT_HEADER, 0);
-        curl_setopt($curlObj, CURLOPT_HTTPHEADER, array('Content-type:application/json'));
-        $response = curl_exec($curlObj);
-        curl_close($curlObj);
-        $json = json_decode($response);
-
-        return $json[0]->url_short;
-    }
-}
-
 if (!function_exists('curl_post')) {
     /**
      * curl发送post请求
      * @param string $url
      * @param array /string $post_data
      */
-    function curl_post($url, $post_data)
+    function curl_post($url, $post_data=[])
     {
         //初始化一个 cURL 对象
         $ch = curl_init();
@@ -335,8 +153,36 @@ if (!function_exists('curl_post')) {
 
         // 设置请求为post类型
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);          //单位 秒，也可以使用
         // 添加post数据到请求中
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+
+        // 执行post请求，获得回复
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return $response;
+    }
+}
+if (!function_exists('curl_get')) {
+    /**
+     * curl发送post请求
+     * @param string $url
+     * @param array /string $post_data
+     */
+    function curl_get($url, $data = [])
+    {
+        if ($data) {
+            if (strpos($url, '?')) $url = $url . '&' . http_build_query($data);
+            else $url = $url . '?' . http_build_query($data);
+        }
+
+        //初始化一个 cURL 对象
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);          //单位 秒，也可以使用
 
         // 执行post请求，获得回复
         $response = curl_exec($ch);
@@ -349,12 +195,12 @@ if (!function_exists('curl_post')) {
 if (!function_exists('curlUpload')) {
     /**
      * curl 上传文件
-     * @param string $url     上传地址
-     * @param array $data     上传的其他数据
-     * @param string $file    上传的图片
+     * @param string $url 上传地址
+     * @param array $data 上传的其他数据
+     * @param string $file 上传的图片
      * @param string $fileKey 图片的 key 值, 相当于form下input的name值
      */
-    function curlUpload($url = '', $data = array(), $file = '', $fileKey = '')
+    function curlUpload_bak($url = '', $file = '', $data = array(), $fileKey = '')
     {
         if (empty($fileKey)) $fileKey = 'files';
 
@@ -371,62 +217,61 @@ if (!function_exists('curlUpload')) {
         $request = curl_init($url);
 
         curl_setopt($request, CURLOPT_POST, true);
-
         curl_setopt($request, CURLOPT_POSTFIELDS, $data);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-        echo curl_exec($request);
+
+        $response = curl_exec($request);
         curl_close($request);
+
+        return $response;
     }
-}
 
-if (!function_exists('send_post')) {
     /**
-     * 发送post请求
-     * @param string $url      请求地址
-     * @param array $post_data post键值对数据
-     * @return string
+     * @param $url  地址
+     * @param array $arr    数据键值对
+     * @param string $files 文件(单文件直接放字符串, 多文件放数据)
+     * @param string $fileKey   希望接收时的文件key名字,默认files
+     * @return string 成功或失败
      */
-    function send_post($url, $post_data, $timeout = 900)
+    function curlUpload($url, $arr = [], $files = '', $fileKey='files', $token='JxRaZezavm3HXM3d9pWnYiqqQC1SJbsU')
     {
+        $curl = curl_init($url);
 
-        $postdata = http_build_query($post_data);
-        $options  = array(
-            'http' => array(
-                'method'  => 'POST',
-                'header'  => 'Content-type:application/x-www-form-urlencoded',
-                'content' => $postdata,
-                'timeout' => $timeout // 超时时间（单位:s）
-            )
-        );
-        $context  = stream_context_create($options);
-        $result   = file_get_contents($url, false, $context);
+        $fileData = [];
+        if ($files) {
+            if (class_exists('\CURLFile')) {// 这里用特性检测判断php版本
+                curl_setopt($curl, CURLOPT_SAFE_UPLOAD, true);
+                if (is_array($files)) {
+                    foreach ($files as $k=>$file) {
+                        $fileData[$fileKey."[".$k."]"] = new \CURLFile($file, '', 'up_real_name');
+                    }
+                } else {
+                    $fileData[$fileKey] = new \CURLFile($files);
+                }
+            } else {
+                if (defined('CURLOPT_SAFE_UPLOAD')) {
+                    curl_setopt($curl, CURLOPT_SAFE_UPLOAD, false);
+                }
+                if (is_array($files)) {
+                    foreach ($files as $k=>$file) {
+                        $fileData[$fileKey."[".$k."]"] = '@' . realpath($file);
+                    }
+                } else {
+                    $fileData[$fileKey] = '@' . realpath($files);
+                }
+            }
+        }
 
-        return $result;
-    }
-}
+        $data = array_merge((array)$arr, $fileData);
 
-if (!function_exists('send_get')) {
-    /**
-     * 发送 get 请求
-     * @param string $url     请求地址
-     * @param array $get_data post键值对数据
-     * @return string
-     */
-    function send_get($url, $get_data = '', $timeout = 5)
-    {
+        $header = array('token:'.$token);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $header); //设置头信息的地方
 
-        $postdata = http_build_query($get_data);
-
-        $options = array(
-            'http' => array(
-                'method'  => 'GET',
-                'header'  => 'Content-type:application/x-www-form-urlencoded',
-                'content' => $postdata,
-                'timeout' => $timeout // 超时时间（单位:s）
-            )
-        );
-        $context = stream_context_create($options);
-        $result  = file_get_contents($url, false, $context);
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $result = curl_exec($curl);
+//        $error = curl_error($curl);
+        curl_close($curl);
 
         return $result;
     }
@@ -439,7 +284,7 @@ if (!function_exists('isMobile')) {
      */
     function isMobile()
     {
-        $user_agent     = $_SERVER['HTTP_USER_AGENT'];
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
         $mobile_browser = Array(
             "mqqbrowser", //手机QQ浏览器
             "opera mobi", //手机opera
@@ -448,7 +293,7 @@ if (!function_exists('isMobile')) {
             "iemobile", "windows ce",//windows phone
             "240×320", "480×640", "acer", "android", "anywhereyougo.com", "asus", "audio", "blackberry", "blazer", "coolpad", "dopod", "etouch", "hitachi", "htc", "huawei", "jbrowser", "lenovo", "lg", "lg-", "lge-", "lge", "mobi", "moto", "nokia", "phone", "samsung", "sony", "symbian", "tablet", "tianyu", "wap", "xda", "xde", "zte"
         );
-        $is_mobile      = false;
+        $is_mobile = false;
         foreach ($mobile_browser as $device) {
             if (stristr($user_agent, $device)) {
                 $is_mobile = true;
@@ -463,7 +308,7 @@ if (!function_exists('isMobile')) {
 if (!function_exists('timeDiff')) {
     /**
      * 计算时间差(日,时分秒)
-     * @param $starttime   (开始时间, 可以是时间戳,也可以是日期格式类似, endtime)
+     * @param $starttime (开始时间, 可以是时间戳,也可以是日期格式类似, endtime)
      * @param $endtime
      * @param string $type (day, hour, minute, second)
      * @return array|bool|mixed
@@ -478,13 +323,13 @@ if (!function_exists('timeDiff')) {
 
         //计算天数
         $timediff = abs($endtime - $starttime);
-        $days     = floor($timediff / 86400);
+        $days = floor($timediff / 86400);
         //计算小时数
         $remain = $timediff % 86400;
-        $hours  = floor($remain / 3600);
+        $hours = floor($remain / 3600);
         //计算分钟数
         $remain = $remain % 3600;
-        $mins   = floor($remain / 60);
+        $mins = floor($remain / 60);
         //计算秒数
         $secs = $remain % 60;
 
@@ -502,8 +347,8 @@ if (!function_exists('timeDiff')) {
 if (!function_exists('toInfiniteTree')) {
     /**
      * 把返回的数据集转换成无限级分类Tree
-     * @param array $list   要转换的数据集
-     * @param string $pid   parent标记字段
+     * @param array $list 要转换的数据集
+     * @param string $pid parent标记字段
      * @param string $level level标记字段
      * @return array
      * @author 麦当苗儿 <zuojiazi@vip.qq.com>
@@ -526,13 +371,12 @@ if (!function_exists('toInfiniteTree')) {
                     $tree[] =& $list[$key];
                 } else {
                     if (isset($refer[$parentId])) {
-                        $parent           =& $refer[$parentId];
+                        $parent =& $refer[$parentId];
                         $parent[$child][] =& $list[$key];
                     }
                 }
             }
         }
-
         return $tree;
     }
 }
@@ -541,9 +385,9 @@ if (!function_exists('showInfiniteTree')) {
     /**
      * 展示无限级分类为树状结构(根据情况整改显示的html)
      * @param $data             数据列表
-     * @param string $name      显示的key名字
-     * @param string $child     子级分类的key
-     * @param int $deep         当前层级深度
+     * @param string $name 显示的key名字
+     * @param string $child 子级分类的key
+     * @param int $deep 当前层级深度
      * @return string
      */
     function showInfiniteTree($data, $name = 'name', $child = '_child', $deep = 0)
@@ -560,47 +404,125 @@ if (!function_exists('showInfiniteTree')) {
     }
 }
 
-if (!function_exists('getSquarePoint')) {
-    /**
-     *计算某个经纬度的周围某段距离的正方形的四个点
-     *
-     * @param lng      float 经度
-     * @param lat      float 纬度
-     * @param distance float 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
-     * @return array 正方形的四个点的经纬度坐标
-     */
-    function getSquarePoint($lng, $lat, $distance = 0.5)
-    {
+function start_with($fullWord, $startStr = '')
+{
+    return (!$fullWord || !$startStr) ? false : ((substr($fullWord, 0, mb_strlen($startStr)) == $startStr) ? true : false);
+}
 
-        $earth_radius = 6371;//地球半径，平均半径为6371km
-        $dlng         = 2 * asin(sin($distance / (2 * $earth_radius)) / cos(deg2rad($lat)));
-        $dlng         = rad2deg($dlng);
 
-        $dlat = $distance / $earth_radius;
-        $dlat = rad2deg($dlat);
+function config($key, $default = '')
+{
+    // 缓存当前配置文件到内存中
+    static $conf = [];
 
-        $squares = array(
-            'left-top'     => array('lat' => $lat + $dlat, 'lng' => $lng - $dlng),
-            'right-top'    => array('lat' => $lat + $dlat, 'lng' => $lng + $dlng),
-            'left-bottom'  => array('lat' => $lat - $dlat, 'lng' => $lng - $dlng),
-            'right-bottom' => array('lat' => $lat - $dlat, 'lng' => $lng + $dlng)
-        );
+    $args = strpos($key, '.') ? explode('.', $key) : [$key];
 
-        return $squares;
-        //使用此函数计算得到结果后，带入sql查询。
-//    $info_sql = "select id,locateinfo,lat,lng from `lbs_info`
-//         where lat<>0
-//         and lat>{$squares['left-bottom']['lat']}
-//         and lat<{$squares['right-top']['lat']}
-//         and lng>{$squares['left-bottom']['lng']}
-//         and lng<{$squares['right-top']['lng']} ";
+    $result = null;
+    if ($args) {
+        // 执行缓存
+        if (!isset($conf[$args[0]])) $conf[$args[0]] = require CONF_PATH . $args[0] . '.php';
+
+        $count = count($args);
+        if ($count) {
+            for ($i = 0; $i < $count; $i++) {
+                $result = $result[$args[$i]];
+            }
+        } else $result[$args[0]] = $conf[$args[0]];
     }
+
+    return $result ?: $default;
 }
 
-if (!function_exists('returnFalse')) {
+function cache($fileName, $data)
+{
+    //目录检测
+    $dir = 'default.cache_path';
+    \Fizzday\FizzDir\Dir::create($dir);
+    //缓存文件
+    $file = $dir . '/' . md5($fileName) . '.php';
+    //读取数据
+    if (is_null($data) && is_file($file)) {
+        $data = file_get_contents($file);
 
+        return unserialize($data) ?: null;
+    }
+    //写入数据
+    $data = serialize($data);
+
+    return file_put_contents($file, $data);
 }
 
-//echo getCode('',['number'],'22');
+function dump($data)
+{
+    echo "<pre>";
+    print_r($data);
+    echo "<pre>";
+}
+
+function dd($data)
+{
+    echo "<pre>";
+    print_r($data);
+    echo "<pre>";
+    die;
+}
+
+/**
+ * 接口json返回
+ * @param $data
+ * @param int $status 0成功, 大于0失败 (如常规失败定义为400, 认证失败定义为401)
+ * @return string
+ */
+function successReturn($data = '', $status = 0, $ext = '')
+{
+    $re = array();
+
+    $re['status'] = $status ? : 0;
+
+    if (!$data) $data = $status ? "fail" : "success";
+    $re['data'] = $data;
+
+    if ($ext) $re['ext'] = $ext;
+
+    return $re;
+}
+
+/**
+ * 接口json返回
+ * @param $data
+ * @param int $status 0成功, 1失败, 100验证失败
+ * @return string
+ */
+function failReturn($data = '', $status = 1)
+{
+    return successReturn($data, $status);
+}
+
+function jsonReturn($data = '', $status = 0, $ext = '')
+{
+    return json_encode(successReturn($data, $status, $ext));
+}
+
+function export_csv($filename, $data, $head='')
+{
+    $string=$head;
+    foreach ($data as $key => $value)
+    {
+        foreach ($value as $k => $val)
+        {
+            $value[$k]=iconv('utf-8','gb2312',$value[$k]);
+        }
+
+        $string .= implode(",",$value).PHP_EOL; //用英文逗号分开
+    }
+
+    header("Content-type:text/csv");
+    header("Content-Disposition:attachment;filename=".$filename);
+    header('Cache-Control:must-revalidate,post-check=0,pre-check=0');
+    header('Expires:0');
+    header('Pragma:public');
+    echo $string;
+}
+
 
 
