@@ -424,7 +424,9 @@ function config($key, $default = '')
 
         $count = count($args);
         if ($count) {
-            for ($i = 0; $i < $count; $i++) {
+            $result = $conf[$args[0]];
+
+            for ($i = 1; $i < $count; $i++) {
                 $result = $result[$args[$i]];
             }
         } else $result = $conf[$args[0]];
