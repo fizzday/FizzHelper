@@ -427,7 +427,7 @@ function config($key, $default = '')
             for ($i = 0; $i < $count; $i++) {
                 $result = $result[$args[$i]];
             }
-        } else $result[$args[0]] = $conf[$args[0]];
+        } else $result = $conf[$args[0]];
     }
 
     return $result ?: $default;
