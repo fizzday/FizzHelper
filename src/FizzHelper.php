@@ -154,6 +154,8 @@ if (!function_exists('curl_post')) {
         // 设置请求为post类型
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3);          //单位 秒，也可以使用
+        // 请求头
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('application/x-www-form-urlencoded;charset=utf-8;'));
         // 添加post数据到请求中
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
 
