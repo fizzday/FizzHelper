@@ -49,7 +49,7 @@ if (!function_exists('show_msg')) {
     {
         $text =
             <<<EOT
-    <html><head><title>{$msg}</title><style>html,body{height:100%}body{margin:0;padding:0;width:100%;display:table;font-weight:100;font-family:Lato}.container{text-align:center;display:table-cell;vertical-align:middle}.content{text-align:center;display:inline-block}.title{font-size:4rem}</style></head><body><div class="container"><div class="content"><div class="title">{$msg}</div></div></div></body></html>
+    <html><head><title>{$msg}</title><style>html,body{height:90%}body{margin:0;padding:0;width:100%;display:table;font-weight:100;font-family:Lato}.container{text-align:center;display:table-cell;vertical-align:middle}.content{text-align:center;display:inline-block}.title{font-size:4rem}</style></head><body><div class="container"><div class="content"><div class="title">{$msg}</div></div></div></body></html>
 EOT;
         if ($return) return $text;
 
@@ -475,14 +475,20 @@ function dd($data)
  * @param int $status 0成功, 大于0失败 (如常规失败定义为400, 认证失败定义为401)
  * @return string
  */
-function successReturn($data = '', $status = 0, $ext = '')
+function successReturn($data = null, $status = 1, $ext = null)
 {
     $re = array();
 
-    $re['status'] = $status ? : 0;
+    if ($status == 1) {
+        $msg = 'success';
+    } else {
+        if ($data === null) $msg = 'fail';
+        else $msg = $data;
+    }
 
-    if (!$data) $data = $status ? "fail" : "success";
+    $re['status'] = $status;
     $re['data'] = $data;
+    $re['msg'] = $msg;
 
     if ($ext) $re['ext'] = $ext;
 
@@ -495,12 +501,12 @@ function successReturn($data = '', $status = 0, $ext = '')
  * @param int $status 0成功, 1失败, 100验证失败
  * @return string
  */
-function failReturn($data = '', $status = 1)
+function failReturn($data = '', $status = 2, $ext = '')
 {
-    return successReturn($data, $status);
+    return successReturn($data, $status, $ext);
 }
 
-function jsonReturn($data = '', $status = 0, $ext = '')
+function jsonReturn($data = '', $status = 10, $ext = '')
 {
     return json_encode(successReturn($data, $status, $ext));
 }
@@ -524,6 +530,21 @@ function export_csv($filename, $data, $head='')
     header('Expires:0');
     header('Pragma:public');
     echo $string;
+}
+
+/**
+ * 获取微秒整形时间戳, 最大18位, 最小10位
+ * @param int $len
+ * @return bool|string
+ */
+function getMicroTimeStr($len=16)
+{
+    if ($len>18) $len=18;
+    if ($len<10) $len=10;
+
+    $mtime=explode(' ',microtime());
+    $startTime=substr($mtime[1].$mtime[0]*pow(10, ($len-10)), 0, $len);
+    return $startTime;
 }
 
 
